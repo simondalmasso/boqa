@@ -112,8 +112,11 @@ jobs:
           docker info >/dev/null
           docker compose version
           rm -rf output/soak "$BOQA_FINAL_OUTPUT" "$BOQA_BUILD_OUTPUT"
-          mkdir -p output/soak/workflow "$BOQA_FINAL_OUTPUT" "$BOQA_BUILD_OUTPUT"
-          docker compose -f compose.lab.yaml config > output/soak/workflow/compose-preflight.yaml
+          mkdir -p output/soak/workflow/config-evidence "$BOQA_FINAL_OUTPUT" "$BOQA_BUILD_OUTPUT"
+          BOQA_REPO_ROOT="$GITHUB_WORKSPACE" \
+          BOQA_EVIDENCE_DIR="$GITHUB_WORKSPACE/output/soak/workflow/config-evidence" \
+          BOQA_ROUND_ID=config-validation \
+            docker compose -f compose.lab.yaml config > output/soak/workflow/compose-preflight.yaml
           node scripts/soak-test.js 2>&1 | tee output/soak/workflow/safe-lab-cycle.log
           mapfile -t evidence_dirs < <(find output/soak -mindepth 1 -maxdepth 1 -type d ! -name workflow -exec test -f '{}/gate-status.json' ';' -print)
           test "${#evidence_dirs[@]}" -eq 1
