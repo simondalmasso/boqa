@@ -105,7 +105,7 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          find exact-source/test -type f -name 'test-*.js' -printf '%P\n' | sort > "$OUTPUT_DIR/test-files.txt"
+          find exact-source/test -maxdepth 1 -type f -name 'test-*.js' -printf '%f\n' | sort > "$OUTPUT_DIR/test-files.txt"
           test "$(wc -l < "$OUTPUT_DIR/test-files.txt")" -eq 38
           (
             cd exact-source
@@ -145,6 +145,7 @@ jobs:
           )
 
       - name: Upload sanitized recovery artifact
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: boqa-arq-recovery-c6e-v1-${{ github.sha }}
