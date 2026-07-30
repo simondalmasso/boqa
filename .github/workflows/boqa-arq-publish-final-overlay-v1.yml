@@ -1,0 +1,201 @@
+name: BOQA ARQ Publish Validated Overlay V1
+
+on:
+  pull_request:
+    branches: [main]
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: boqa-arq-publish-validated-overlay-v1
+  cancel-in-progress: false
+
+jobs:
+  publish-validated-overlay:
+    if: github.head_ref == 'ops/boqa-arq-final-validation-v1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TARGET_BRANCH: feat/boqa-safe-lab-hunter-contract-v1
+      TARGET_SHA: c6ede91f758327d111f59db38920b7ccd24cba42
+      TARGET_TREE: b568cc43bba1bc124129ffefcb294d4fa8d806a2
+      EXPECTED_FINAL_TREE: b60aa3db55bda9b5a4b0ab790a68963b8f80cec0
+      TARGET_LOCK_BLOB: da5ba0fd4ce6c2479a7b7e45cb6f359eb828df09
+      OVERLAY_SHA256: 29aa05ad02b8a0a2b2810c151b36691232da0c8f3a2ae8e3ce97da1614252d8c
+      OUTPUT_DIR: output/boqa-arq-publish-validated-overlay-v1
+
+    steps:
+      - name: Checkout exact operational head with scoped write credential
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Reconstruct exact validated tree from unchanged target head
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          git fetch --no-tags origin "refs/heads/$TARGET_BRANCH:refs/remotes/origin/$TARGET_BRANCH"
+          test "$(git rev-parse "refs/remotes/origin/$TARGET_BRANCH")" = "$TARGET_SHA"
+          test "$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')" = "$TARGET_SHA"
+          git worktree add --detach exact-source "$TARGET_SHA"
+          test "$(git -C exact-source rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git -C exact-source rev-parse 'HEAD^{tree}')" = "$TARGET_TREE"
+          test -z "$(git -C exact-source status --porcelain)"
+
+          cat .boqa-recovery/overlay.part.* | base64 --decode > "$OUTPUT_DIR/final-overlay.tar.gz"
+          echo "$OVERLAY_SHA256  $OUTPUT_DIR/final-overlay.tar.gz" | sha256sum -c -
+          tar -xzf "$OUTPUT_DIR/final-overlay.tar.gz" -C exact-source --no-same-owner
+
+      - name: Enforce exact scope and unchanged lockfile
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cat > "$OUTPUT_DIR/expected-paths.txt" <<'EOF'
+          .github/workflows/boqa-safe-lab-hunter-preview-v1.yml
+          dashboard/app.js
+          dashboard/dashboard-state.js
+          lib/safe-lab-contract-common-v1.js
+          lib/safe-lab-evidence-chain-v1.js
+          lib/safe-lab-hunter-contract-v1.js
+          scripts/build-safe-lab-preview-bundle.js
+          scripts/finalize-safe-lab-preview-artifact-v1.js
+          scripts/generate-safe-lab-contract.js
+          scripts/safe-lab-preview-smoke-v1.js
+          scripts/safe-lab-preview-upload-v1.sh
+          scripts/verify-safe-lab-evidence-chain-v1.js
+          scripts/verify-safe-lab-preview-bundle.js
+          scripts/verify-safe-lab-temporal-states.js
+          test/support/safe-lab-contract-fixture-v1.js
+          test/test-dashboard-state.js
+          test/test-safe-lab-evidence-chain-v1.js
+          test/test-safe-lab-hunter-contract-negative-v1.js
+          test/test-safe-lab-hunter-contract-v1.js
+          test/test-safe-lab-preview-bundle-verifier-v1.js
+          test/test-safe-lab-worker-isolation-v2.js
+          worker.js
+          EOF
+          sed -i 's/^          //' "$OUTPUT_DIR/expected-paths.txt"
+          sort -o "$OUTPUT_DIR/expected-paths.txt" "$OUTPUT_DIR/expected-paths.txt"
+          git -C exact-source add -N .
+          git -C exact-source diff --name-only | sort > "$OUTPUT_DIR/actual-paths.txt"
+          diff -u "$OUTPUT_DIR/expected-paths.txt" "$OUTPUT_DIR/actual-paths.txt"
+          test "$(git -C exact-source hash-object package-lock.json)" = "$TARGET_LOCK_BLOB"
+          git -C exact-source diff --exit-code -- package.json package-lock.json
+          git -C exact-source diff --check
+          test "$(find exact-source/test -maxdepth 1 -type f -name 'test-*.js' | wc -l)" -eq 38
+
+      - name: Reproducible install
+        working-directory: exact-source
+        run: npm ci
+
+      - name: Re-run all pre-publication gates
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd exact-source
+          node --check server.js
+          while IFS= read -r file; do node --check "$file"; done < <(find lib routes scripts test dashboard -type f -name '*.js' -print | sort)
+          node --input-type=module --check < worker.js
+          bash -n scripts/safe-lab-preview-upload-v1.sh
+          test ! -e .github/workflows/boqa-source-snapshot.yml
+          ! grep -R -n --include='*.js' --include='*.json' '\bstorage_valid\b' lib schemas dashboard test scripts
+          if git diff "$TARGET_SHA" -- . | grep -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{20,})'; then
+            echo 'SECRET_SCAN=FAIL' >&2
+            exit 1
+          fi
+          {
+            node test/test-safe-lab-hunter-contract-v1.js
+            node test/test-safe-lab-hunter-contract-negative-v1.js
+            node test/test-safe-lab-evidence-chain-v1.js
+            node test/test-safe-lab-worker-preview-v1.js
+            node test/test-safe-lab-worker-isolation-v2.js
+            node test/test-safe-lab-preview-bundle-verifier-v1.js
+            node test/test-dashboard-state.js
+            node test/test-dashboard-smoke.js
+            node test/test-public-private-boundary.js
+            node test/test-worker-dashboard-contract.js
+          } 2>&1 | tee "../$OUTPUT_DIR/focused-gates.log"
+          npm test 2>&1 | tee "../$OUTPUT_DIR/full-suite.log"
+          grep -F 'Total:    38' "../$OUTPUT_DIR/full-suite.log"
+          grep -F 'Passed:   38' "../$OUTPUT_DIR/full-suite.log"
+          grep -F 'Failed:   0' "../$OUTPUT_DIR/full-suite.log"
+          grep -F 'Errored:  0' "../$OUTPUT_DIR/full-suite.log"
+
+      - name: Create exactly one cohesive functional commit
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git -C exact-source add -A
+          git -C exact-source diff --cached --name-only | sort > "$OUTPUT_DIR/staged-paths.txt"
+          diff -u "$OUTPUT_DIR/expected-paths.txt" "$OUTPUT_DIR/staged-paths.txt"
+          final_tree="$(git -C exact-source write-tree)"
+          test "$final_tree" = "$EXPECTED_FINAL_TREE"
+          git -C exact-source config user.name 'github-actions[bot]'
+          git -C exact-source config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C exact-source commit -m 'fix(lab): authenticate evidence chain and isolate preview mode'
+          functional_sha="$(git -C exact-source rev-parse HEAD)"
+          test "$(git -C exact-source rev-parse HEAD^)" = "$TARGET_SHA"
+          test "$(git -C exact-source rev-parse 'HEAD^{tree}')" = "$EXPECTED_FINAL_TREE"
+          echo "FUNCTIONAL_SHA=$functional_sha" >> "$GITHUB_ENV"
+
+      - name: Recheck target ref and push fast-forward only
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          remote_before="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$remote_before" = "$TARGET_SHA"
+          git -C exact-source push origin "HEAD:refs/heads/$TARGET_BRANCH"
+          remote_after="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | awk '{print $1}')"
+          test "$remote_after" = "$FUNCTIONAL_SHA"
+          jq -n \
+            --arg validation PASS \
+            --arg branch "$TARGET_BRANCH" \
+            --arg parent_sha "$TARGET_SHA" \
+            --arg functional_sha "$FUNCTIONAL_SHA" \
+            --arg tree_sha "$EXPECTED_FINAL_TREE" \
+            --arg overlay_sha256 "$OVERLAY_SHA256" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg workflow "$GITHUB_WORKFLOW" \
+            --arg job "$GITHUB_JOB" \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            '{
+              validation: $validation,
+              branch: $branch,
+              parent_sha: $parent_sha,
+              functional_sha: $functional_sha,
+              tree_sha: $tree_sha,
+              overlay_sha256: $overlay_sha256,
+              repository: $repository,
+              workflow: $workflow,
+              job: $job,
+              run_id: $run_id,
+              run_attempt: $run_attempt,
+              force_push: false,
+              production_changed: false
+            }' > "$OUTPUT_DIR/publication-manifest.json"
+          (
+            cd "$OUTPUT_DIR"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\n' | sort | xargs sha256sum > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+
+      - name: Upload publication evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: boqa-arq-publish-validated-overlay-v1-${{ github.event.pull_request.head.sha }}
+          path: output/boqa-arq-publish-validated-overlay-v1/
+          if-no-files-found: error
+          retention-days: 14
