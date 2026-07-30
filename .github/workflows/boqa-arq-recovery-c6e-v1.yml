@@ -101,16 +101,25 @@ jobs:
         working-directory: exact-source
         run: npm ci
 
-      - name: Verify and execute all 38 test files
+      - name: Verify and execute canonical 34-file baseline suite
         shell: bash
         run: |
           set -Eeuo pipefail
           find exact-source/test -maxdepth 1 -type f -name 'test-*.js' -printf '%f\n' | sort > "$OUTPUT_DIR/test-files.txt"
-          test "$(wc -l < "$OUTPUT_DIR/test-files.txt")" -eq 38
+          test "$(wc -l < "$OUTPUT_DIR/test-files.txt")" -eq 34
           (
             cd exact-source
             npm test
           ) 2>&1 | tee "$OUTPUT_DIR/full-suite.log"
+
+      - name: Package recovered dependency state
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          tar -C exact-source -czf "$OUTPUT_DIR/node_modules-node20-linux-x64.tar.gz" node_modules
+          npm_cache="$(npm config get cache)"
+          test -d "$npm_cache"
+          tar -C "$npm_cache" -czf "$OUTPUT_DIR/npm-cache-node20.tar.gz" .
 
       - name: Create recovery manifest and checksums
         shell: bash
@@ -134,7 +143,8 @@ jobs:
               run_attempt: $run_attempt,
               operational_head_sha: $head_sha,
               ws_integrity: env.EXPECTED_WS_INTEGRITY,
-              test_files: 38,
+              baseline_test_files: 34,
+              expected_final_test_files_after_remediation: 38,
               production_changed: false,
               pr34_head_changed: false
             }' > "$OUTPUT_DIR/recovery-manifest.json"
