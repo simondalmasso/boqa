@@ -1,0 +1,153 @@
+name: BOQA ARQ Recovery C6E V1
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boqa-arq-recovery-c6e-v1
+  cancel-in-progress: true
+
+jobs:
+  recovery:
+    if: github.head_ref == 'ops/boqa-arq-recovery-c6e-v1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      TARGET_SHA: c6ede91f758327d111f59db38920b7ccd24cba42
+      TARGET_TREE: b568cc43bba1bc124129ffefcb294d4fa8d806a2
+      EXPECTED_WS_VERSION: 8.21.0
+      EXPECTED_WS_TARBALL: https://registry.npmjs.org/ws/-/ws-8.21.0.tgz
+      EXPECTED_WS_INTEGRITY: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==
+      OUTPUT_DIR: output/boqa-arq-recovery-c6e-v1
+
+    steps:
+      - name: Checkout operational runner branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Materialize exact target source
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          git fetch --no-tags origin "$TARGET_SHA"
+          git worktree add --detach exact-source FETCH_HEAD
+          test "$(git -C exact-source rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git -C exact-source rev-parse 'HEAD^{tree}')" = "$TARGET_TREE"
+          test -z "$(git -C exact-source status --porcelain)"
+          git -C exact-source archive --format=tar.gz --output="../$OUTPUT_DIR/boqa-source-$TARGET_SHA.tar.gz" HEAD
+
+      - name: Verify lockfile identity for ws
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const lock = JSON.parse(fs.readFileSync('exact-source/package-lock.json', 'utf8'));
+          const entry = lock.packages && lock.packages['node_modules/ws'];
+          if (!entry) throw new Error('LOCKFILE_WS_ENTRY_MISSING');
+          if (entry.version !== process.env.EXPECTED_WS_VERSION) throw new Error(`LOCKFILE_WS_VERSION_MISMATCH:${entry.version}`);
+          if (entry.resolved !== process.env.EXPECTED_WS_TARBALL) throw new Error(`LOCKFILE_WS_TARBALL_MISMATCH:${entry.resolved}`);
+          if (entry.integrity !== process.env.EXPECTED_WS_INTEGRITY) throw new Error(`LOCKFILE_WS_INTEGRITY_MISMATCH:${entry.integrity}`);
+          NODE
+
+      - name: Read-only registry preflight and exact tarball integrity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          npm view "ws@$EXPECTED_WS_VERSION" --json > "$OUTPUT_DIR/ws-packument.json"
+          jq -e \
+            --arg version "$EXPECTED_WS_VERSION" \
+            --arg tarball "$EXPECTED_WS_TARBALL" \
+            --arg integrity "$EXPECTED_WS_INTEGRITY" \
+            '.version == $version and .dist.tarball == $tarball and .dist.integrity == $integrity' \
+            "$OUTPUT_DIR/ws-packument.json" >/dev/null
+          npm pack "ws@$EXPECTED_WS_VERSION" --ignore-scripts --pack-destination "$OUTPUT_DIR" >/dev/null
+          test -f "$OUTPUT_DIR/ws-$EXPECTED_WS_VERSION.tgz"
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const file = `${process.env.OUTPUT_DIR}/ws-${process.env.EXPECTED_WS_VERSION}.tgz`;
+          const bytes = fs.readFileSync(file);
+          const sri = `sha512-${crypto.createHash('sha512').update(bytes).digest('base64')}`;
+          if (sri !== process.env.EXPECTED_WS_INTEGRITY) throw new Error(`WS_TARBALL_SRI_MISMATCH:${sri}`);
+          fs.writeFileSync(`${process.env.OUTPUT_DIR}/ws-integrity.json`, `${JSON.stringify({
+            package: `ws@${process.env.EXPECTED_WS_VERSION}`,
+            bytes: bytes.length,
+            sha256: crypto.createHash('sha256').update(bytes).digest('hex'),
+            sri,
+            validation: 'PASS'
+          }, null, 2)}\n`, { flag: 'wx' });
+          NODE
+          tar -tzf "$OUTPUT_DIR/ws-$EXPECTED_WS_VERSION.tgz" > "$OUTPUT_DIR/ws-tar-entries.txt"
+          ! awk '$0 ~ /^\// || $0 ~ /(^|\/)\.\.(\/|$)/ { bad=1 } END { exit bad ? 0 : 1 }' "$OUTPUT_DIR/ws-tar-entries.txt"
+          tar -xOf "$OUTPUT_DIR/ws-$EXPECTED_WS_VERSION.tgz" package/package.json | jq -e \
+            --arg version "$EXPECTED_WS_VERSION" \
+            '.name == "ws" and .version == $version' >/dev/null
+
+      - name: Reproducible install
+        working-directory: exact-source
+        run: npm ci
+
+      - name: Verify and execute all 38 test files
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          find exact-source/test -type f -name 'test-*.js' -printf '%P\n' | sort > "$OUTPUT_DIR/test-files.txt"
+          test "$(wc -l < "$OUTPUT_DIR/test-files.txt")" -eq 38
+          (
+            cd exact-source
+            npm test
+          ) 2>&1 | tee "$OUTPUT_DIR/full-suite.log"
+
+      - name: Create recovery manifest and checksums
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          jq -n \
+            --arg target_sha "$TARGET_SHA" \
+            --arg target_tree "$TARGET_TREE" \
+            --arg workflow "$GITHUB_WORKFLOW" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg head_sha "$GITHUB_SHA" \
+            '{
+              validation: "PASS",
+              target_sha: $target_sha,
+              target_tree: $target_tree,
+              workflow: $workflow,
+              repository: $repository,
+              run_id: $run_id,
+              run_attempt: $run_attempt,
+              operational_head_sha: $head_sha,
+              ws_integrity: env.EXPECTED_WS_INTEGRITY,
+              test_files: 38,
+              production_changed: false,
+              pr34_head_changed: false
+            }' > "$OUTPUT_DIR/recovery-manifest.json"
+          (
+            cd "$OUTPUT_DIR"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\n' | sort | xargs sha256sum > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+
+      - name: Upload sanitized recovery artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: boqa-arq-recovery-c6e-v1-${{ github.sha }}
+          path: output/boqa-arq-recovery-c6e-v1/
+          if-no-files-found: error
+          retention-days: 7
