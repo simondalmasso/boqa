@@ -34,6 +34,9 @@ function jsonResponse(payload, status = 200, headers = {}) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store, max-age=0',
+      'Pragma': 'no-cache',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer',
       ...headers,
     },
   });
@@ -135,6 +138,20 @@ function safeLabUnavailableResponse() {
     status: 'UNAVAILABLE',
     reportable: false,
   }, 503);
+}
+
+
+function safeLabHealthPayload(build) {
+  return {
+    status: 'ok',
+    mode: 'controlled_lab_preview',
+    environment: 'controlled_lab',
+    source_sha: build.source_sha,
+    contract_checksum: build.contract_checksum,
+    promotion_ready: false,
+    promotion_blocker: 'CONTROLLED_LAB_PREVIEW',
+    timestamp: build.contract.observed_at,
+  };
 }
 
 function isAllowedApiRequest(request, pathname) {
@@ -243,33 +260,26 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       const allowed = isAllowedApiRequest(request, url.pathname);
       if (!allowed) return jsonResponse({ error: 'not_found' }, 404);
-      if (url.pathname === '/api/hunter/status' && SAFE_LAB_PREVIEW_BUILD.enabled === true) {
+      if (SAFE_LAB_PREVIEW_BUILD.enabled === true) {
         if (!safeLabBuild) return safeLabUnavailableResponse();
-        return jsonResponse(safeLabBuild.contract);
+        if (url.pathname === '/api/hunter/status') return jsonResponse(safeLabBuild.contract);
+        return jsonResponse(safeLabHealthPayload(safeLabBuild));
       }
       if (!backendConfigured) return failClosedApi(url.pathname);
       return proxyToBackend(request, env);
     }
 
     if (url.pathname === '/ws') {
+      if (SAFE_LAB_PREVIEW_BUILD.enabled === true) return jsonResponse({ error: 'not_found' }, 404);
       if (!backendConfigured) return jsonResponse({ error: 'websocket_unavailable', fallback: 'http_polling' }, 426);
       return proxyToBackend(request, env);
     }
 
     if (url.pathname === '/health') {
+      if (request.method !== 'GET') return jsonResponse({ error: 'not_found' }, 404);
       if (SAFE_LAB_PREVIEW_BUILD.enabled === true) {
         if (!safeLabBuild) return safeLabUnavailableResponse();
-        return jsonResponse({
-          status: 'ok',
-          worker: 'boqa',
-          mode: 'controlled_lab_preview',
-          backend_configured: backendConfigured,
-          source_sha: safeLabBuild.source_sha,
-          contract_checksum: safeLabBuild.contract_checksum,
-          promotion_ready: false,
-          promotion_blocker: 'CONTROLLED_LAB_PREVIEW',
-          timestamp: new Date().toISOString(),
-        });
+        return jsonResponse(safeLabHealthPayload(safeLabBuild));
       }
       return jsonResponse({
         status: 'ok',
