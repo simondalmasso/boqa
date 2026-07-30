@@ -18,6 +18,10 @@ const HEAD = 'a'.repeat(40);
 const MERGE = 'b'.repeat(40);
 const TREE = 'c'.repeat(40);
 const RUN = '123456789';
+const ATTEMPT = '1';
+const WORKFLOW = 'BOQA Real Docker Qualification Gate V1';
+const JOB = 'qualification';
+const REPOSITORY = 'simonkey888/boqa';
 const NOW = Date.parse('2026-07-23T03:01:00.000Z');
 const IMAGE_DIGEST = `sha256:${'d'.repeat(64)}`;
 const IMAGE = `bkimminich/juice-shop@${IMAGE_DIGEST}`;
@@ -91,7 +95,7 @@ function writeSums(dir) {
 }
 function read(dir, name) { return JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8')); }
 function mutate(dir, name, fn) { const value = read(dir, name); fn(value); jsonWrite(path.join(dir, name), value); writeSums(dir); }
-function generate(dir, overrides = {}) { return generateSafeLabHunterContract({ evidenceDir: dir, expectedSourceSha: HEAD, expectedMergeSha: MERGE, expectedTreeSha: TREE, expectedWorkflowRunId: RUN, nowMs: NOW, ...overrides }); }
+function generate(dir, overrides = {}) { return generateSafeLabHunterContract({ evidenceDir: dir, expectedSourceSha: HEAD, expectedMergeSha: MERGE, expectedTreeSha: TREE, expectedWorkflowRunId: RUN, expectedWorkflowRunAttempt: ATTEMPT, expectedWorkflowName: WORKFLOW, expectedWorkflowJob: JOB, expectedRepository: REPOSITORY, nowMs: NOW, ...overrides }); }
 function test(name, fn) { fn(); passed += 1; console.log(`ok ${passed} - ${name}`); }
 function rejects(name, fn, code) { test(name, () => assert.throws(fn, (e) => e.code === code || String(e.message).startsWith(code))); }
 

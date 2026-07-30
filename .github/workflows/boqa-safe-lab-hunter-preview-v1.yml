@@ -1,0 +1,208 @@
+name: BOQA Safe Lab Hunter Preview V1
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boqa-safe-lab-hunter-preview-v1-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  safe-lab-preview:
+    if: github.event.pull_request.number == 34 && github.head_ref == 'feat/boqa-safe-lab-hunter-contract-v1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CI: 'true'
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      WORKER_NAME: boqa
+      WRANGLER_VERSION: '4.112.0'
+      BOQA_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      BOQA_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+      BOQA_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      BOQA_MERGE_SHA: ${{ github.sha }}
+      SOAK_MODE: short
+      SOAK_INTERVAL_MS: '1000'
+      BOQA_FINAL_OUTPUT: output/safe-lab-hunter-preview-v1
+      BOQA_BUILD_OUTPUT: output/safe-lab-build-v1
+
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Verify pinned source identity
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(git rev-parse HEAD)" = "$BOQA_HEAD_SHA"
+          git cat-file -e "$BOQA_BASE_SHA^{commit}"
+          git merge-base --is-ancestor "$BOQA_BASE_SHA" HEAD
+          test "$GITHUB_HEAD_REF" = "$BOQA_HEAD_BRANCH"
+          test "$GITHUB_BASE_REF" = main
+          tree_sha=$(git rev-parse 'HEAD^{tree}')
+          test "$tree_sha" != "$BOQA_HEAD_SHA"
+          echo "BOQA_TREE_SHA=$tree_sha" >> "$GITHUB_ENV"
+          mkdir -p "$BOQA_FINAL_OUTPUT" "$BOQA_BUILD_OUTPUT"
+
+      - name: Reproducible install
+        run: npm ci
+
+      - name: Syntax, scope and secret gates
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          node --check server.js
+          while IFS= read -r file; do node --check "$file"; done < <(find lib routes scripts test dashboard -type f -name '*.js' -print | sort)
+          node --input-type=module --check < worker.js
+          bash -n scripts/safe-lab-preview-upload-v1.sh
+          test ! -e .github/workflows/boqa-source-snapshot.yml
+          test "$(find test -maxdepth 1 -type f -name 'test-*.js' | wc -l)" -eq 38
+          ! grep -R -n --include='*.js' --include='*.json' '\bstorage_valid\b' lib schemas dashboard test scripts
+          ! grep -n -- '--keep-vars' scripts/safe-lab-preview-upload-v1.sh
+          git diff --check "$BOQA_BASE_SHA"...HEAD
+          if git diff "$BOQA_BASE_SHA"...HEAD -- . ':!package-lock.json' | grep -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{20,})'; then
+            echo 'SECRET_SCAN=FAIL' >&2
+            exit 1
+          fi
+          git diff --exit-code "$BOQA_BASE_SHA"...HEAD -- package-lock.json
+
+      - name: Focused Safe Lab gates
+        run: |
+          set -Eeuo pipefail
+          node test/test-safe-lab-hunter-contract-v1.js
+          node test/test-safe-lab-hunter-contract-negative-v1.js
+          node test/test-safe-lab-evidence-chain-v1.js
+          node test/test-safe-lab-worker-preview-v1.js
+          node test/test-safe-lab-worker-isolation-v2.js
+          node test/test-safe-lab-preview-bundle-verifier-v1.js
+          node test/test-dashboard-state.js
+          node test/test-dashboard-smoke.js
+          node test/test-public-private-boundary.js
+          node test/test-worker-dashboard-contract.js
+
+      - name: Full 38-file regression suite before publication
+        run: npm test
+
+      - name: Prepare pinned Wrangler and Chromium before freshness clock
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          npx --yes "wrangler@$WRANGLER_VERSION" --version
+          npx playwright install --with-deps chromium
+
+      - name: Docker preflight and fresh controlled cycle
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          docker info >/dev/null
+          docker compose version
+          rm -rf output/soak "$BOQA_FINAL_OUTPUT" "$BOQA_BUILD_OUTPUT"
+          mkdir -p output/soak/workflow "$BOQA_FINAL_OUTPUT" "$BOQA_BUILD_OUTPUT"
+          docker compose -f compose.lab.yaml config > output/soak/workflow/compose-preflight.yaml
+          node scripts/soak-test.js 2>&1 | tee output/soak/workflow/safe-lab-cycle.log
+          mapfile -t evidence_dirs < <(find output/soak -mindepth 1 -maxdepth 1 -type d ! -name workflow -exec test -f '{}/gate-status.json' ';' -print)
+          test "${#evidence_dirs[@]}" -eq 1
+          evidence_dir=$(realpath "${evidence_dirs[0]}")
+          echo "BOQA_EVIDENCE_DIR=$evidence_dir" >> "$GITHUB_ENV"
+
+      - name: Generate authenticated contract from same-run evidence
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          contract="$BOQA_BUILD_OUTPUT/hunter-status-public.json"
+          report="$BOQA_FINAL_OUTPUT/evidence-validation-report.json"
+          node scripts/verify-safe-lab-evidence-chain-v1.js \
+            "$BOQA_EVIDENCE_DIR" "$BOQA_HEAD_SHA" "$BOQA_MERGE_SHA" "$BOQA_TREE_SHA" \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_WORKFLOW" "$GITHUB_JOB" "$GITHUB_REPOSITORY" "$report"
+          node scripts/generate-safe-lab-contract.js \
+            "$BOQA_EVIDENCE_DIR" "$BOQA_HEAD_SHA" "$BOQA_MERGE_SHA" "$BOQA_TREE_SHA" \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_WORKFLOW" "$GITHUB_JOB" "$GITHUB_REPOSITORY" "$contract"
+          (cd "$BOQA_BUILD_OUTPUT" && sha256sum -c hunter-status-public.json.sha256)
+          jq -e --arg sha "$BOQA_HEAD_SHA" --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" --arg workflow "$GITHUB_WORKFLOW" --arg job "$GITHUB_JOB" --arg repository "$GITHUB_REPOSITORY" '
+            .validation == "PASS" and .source_sha == $sha and .workflow.run_id == $run and
+            .workflow.run_attempt == $attempt and .workflow.name == $workflow and .workflow.job == $job and
+            .workflow.repository == $repository and .files_verified == 9 and .rounds_requested == 1 and
+            .rounds_completed == 1 and .vulnerable_confirmed == 1 and .controls_clean == 1 and
+            .false_positives == 0 and .false_negatives == 0 and .unauthorized_connections == 0 and
+            .cleanup_failures == 0 and .internal_network == true and .host_ports == 0 and
+            .docker_socket == 0 and .privileged == false and .capabilities == "dropped" and
+            .read_only_runtime == true and .runtime_egress == "blocked" and
+            .production_accessed == false and .deploy_performed == false
+          ' "$report" >/dev/null
+          cp "$contract" "$contract.sha256" "$contract.evidence.json" "$BOQA_FINAL_OUTPUT/"
+          echo "BOQA_PUBLIC_CONTRACT_PATH=$(realpath "$contract")" >> "$GITHUB_ENV"
+
+      - name: Build and independently verify exact preview bundle
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          bundle="$BOQA_BUILD_OUTPUT/bundle"
+          BOQA_SAFE_LAB_PREVIEW=true node scripts/build-safe-lab-preview-bundle.js \
+            "$BOQA_PUBLIC_CONTRACT_PATH" "$BOQA_PUBLIC_CONTRACT_PATH.sha256" "$BOQA_HEAD_SHA" "$bundle"
+          node scripts/verify-safe-lab-preview-bundle.js "$bundle" "$BOQA_HEAD_SHA" "$BOQA_FINAL_OUTPUT/embedded-contract-verification.json"
+          node scripts/verify-safe-lab-promotion-policy.js "$bundle/promotion-policy.json"
+          node scripts/verify-safe-lab-temporal-states.js "$BOQA_PUBLIC_CONTRACT_PATH" "$BOQA_FINAL_OUTPUT/temporal-state-report.json"
+          cp "$bundle/promotion-policy.json" "$BOQA_FINAL_OUTPUT/promotion-policy.json"
+          cp "$bundle/SHA256SUMS" "$BOQA_FINAL_OUTPUT/bundle-SHA256SUMS"
+          echo "BOQA_BUNDLE_DIR=$(realpath "$bundle")" >> "$GITHUB_ENV"
+
+      - name: Wrangler dry run on exact final bundle
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p output/wrangler-safe-lab-dry-run
+          cd "$BOQA_BUNDLE_DIR"
+          WRANGLER_SEND_METRICS=false npx --yes "wrangler@$WRANGLER_VERSION" deploy --dry-run --outdir "$GITHUB_WORKSPACE/output/wrangler-safe-lab-dry-run"
+
+      - name: Upload exact Cloudflare version without traffic
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BOQA_OUTPUT_DIR: ${{ github.workspace }}/output/safe-lab-hunter-preview-v1
+        run: bash scripts/safe-lab-preview-upload-v1.sh
+
+      - name: Candidate contract and browser gates
+        env:
+          BOQA_OUTPUT_DIR: ${{ github.workspace }}/output/safe-lab-hunter-preview-v1
+        run: node scripts/safe-lab-preview-smoke-v1.js
+
+      - name: Finalize sanitized artifact and production invariance
+        shell: bash
+        env:
+          BOQA_OUTPUT_DIR: ${{ github.workspace }}/output/safe-lab-hunter-preview-v1
+        run: |
+          set -Eeuo pipefail
+          node scripts/finalize-safe-lab-preview-artifact-v1.js
+          cd "$BOQA_OUTPUT_DIR"
+          sha256sum -c SHA256SUMS
+          jq -e '
+            .candidate_traffic_percentage == 0 and .stable_traffic_percentage == 100 and
+            .production_changed == false and .deploy_performed == false and
+            .promotion_ready == false and .promotion_blocker == "CONTROLLED_LAB_PREVIEW"
+          ' worker-version.json >/dev/null
+          cmp deployment-before.json deployment-after.json
+
+      - name: Upload Safe Lab audit package
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: boqa-safe-lab-hunter-preview-v1-${{ github.event.pull_request.head.sha }}
+          path: output/safe-lab-hunter-preview-v1/
+          if-no-files-found: error
+          retention-days: 14

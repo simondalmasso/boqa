@@ -34,6 +34,8 @@ function jsonResponse(payload, status = 200, headers = {}) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store, max-age=0',
+      'Pragma': 'no-cache',
+      'X-Content-Type-Options': 'nosniff',
       ...headers,
     },
   });
@@ -126,6 +128,24 @@ async function getSafeLabPreviewBuild() {
   const actualChecksum = `sha256:${await sha256Hex(canonical)}`;
   if (actualChecksum !== build.contract_checksum) return null;
   return build;
+}
+
+
+function safeLabHealthPayload(build) {
+  return {
+    schema_version: 1,
+    environment: 'controlled_lab',
+    status: build.contract.status,
+    mode: 'controlled_lab_preview',
+    reportable: false,
+    source_sha: build.source_sha,
+    contract_checksum: build.contract_checksum,
+    observed_at: build.contract.observed_at,
+    fresh_until: build.contract.fresh_until,
+    unavailable_after: build.contract.unavailable_after,
+    promotion_ready: false,
+    promotion_blocker: 'CONTROLLED_LAB_PREVIEW',
+  };
 }
 
 function safeLabUnavailableResponse() {
@@ -234,19 +254,32 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const backendConfigured = Boolean(env && env.BOQA_BACKEND_URL);
+    const labRequested = SAFE_LAB_PREVIEW_BUILD.enabled === true;
     const safeLabBuild = await getSafeLabPreviewBuild();
 
-    if (isPrivateSurface(url.pathname)) {
-      return hiddenPrivateResponse(url.pathname);
+    if (isPrivateSurface(url.pathname)) return hiddenPrivateResponse(url.pathname);
+
+    if (labRequested) {
+      if (!safeLabBuild) {
+        if (url.pathname === '/api/hunter/status' || url.pathname === '/api/health' || url.pathname === '/health') {
+          return safeLabUnavailableResponse();
+        }
+        if (url.pathname.startsWith('/api/') || url.pathname === '/ws') return jsonResponse({ error: 'not_found' }, 404);
+      } else {
+        if (request.method !== 'GET' && (url.pathname === '/api/hunter/status' || url.pathname === '/api/health' || url.pathname === '/health')) {
+          return jsonResponse({ error: 'not_found' }, 404);
+        }
+        if (request.method === 'GET' && url.pathname === '/api/hunter/status') return jsonResponse(safeLabBuild.contract);
+        if (request.method === 'GET' && (url.pathname === '/api/health' || url.pathname === '/health')) {
+          return jsonResponse(safeLabHealthPayload(safeLabBuild));
+        }
+        if (url.pathname.startsWith('/api/') || url.pathname === '/ws') return jsonResponse({ error: 'not_found' }, 404);
+      }
     }
 
     if (url.pathname.startsWith('/api/')) {
       const allowed = isAllowedApiRequest(request, url.pathname);
       if (!allowed) return jsonResponse({ error: 'not_found' }, 404);
-      if (url.pathname === '/api/hunter/status' && SAFE_LAB_PREVIEW_BUILD.enabled === true) {
-        if (!safeLabBuild) return safeLabUnavailableResponse();
-        return jsonResponse(safeLabBuild.contract);
-      }
       if (!backendConfigured) return failClosedApi(url.pathname);
       return proxyToBackend(request, env);
     }
@@ -257,20 +290,6 @@ export default {
     }
 
     if (url.pathname === '/health') {
-      if (SAFE_LAB_PREVIEW_BUILD.enabled === true) {
-        if (!safeLabBuild) return safeLabUnavailableResponse();
-        return jsonResponse({
-          status: 'ok',
-          worker: 'boqa',
-          mode: 'controlled_lab_preview',
-          backend_configured: backendConfigured,
-          source_sha: safeLabBuild.source_sha,
-          contract_checksum: safeLabBuild.contract_checksum,
-          promotion_ready: false,
-          promotion_blocker: 'CONTROLLED_LAB_PREVIEW',
-          timestamp: new Date().toISOString(),
-        });
-      }
       return jsonResponse({
         status: 'ok',
         worker: 'boqa',
@@ -280,9 +299,7 @@ export default {
       });
     }
 
-    if (env && env.ASSETS) {
-      return secureAssetResponse(await env.ASSETS.fetch(request), url.pathname);
-    }
+    if (env && env.ASSETS) return secureAssetResponse(await env.ASSETS.fetch(request), url.pathname);
 
     return new Response('BOQA Worker — no assets bound', {
       status: 404,

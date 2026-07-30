@@ -111,6 +111,14 @@ const labPayload = {
   message: 'Validación completada en laboratorio controlado',
 };
 
+
+const labHealthPayload = {
+  schema_version: 1, environment: 'controlled_lab', status: 'FRESH', mode: 'controlled_lab_preview', reportable: false,
+  source_sha: 'a'.repeat(40), contract_checksum: `sha256:${'c'.repeat(64)}`,
+  observed_at: '2026-07-17T18:39:50.000Z', fresh_until: '2026-07-17T18:41:20.000Z', unavailable_after: '2026-07-18T18:39:50.000Z',
+  promotion_ready: false, promotion_blocker: 'CONTROLLED_LAB_PREVIEW',
+};
+
 const productionRejectsLab = State.buildModel({
   previous: State.createInitialModel(), nowMs: now, allowControlledLab: false,
   hunter: { ok: true, status: 200, payload: labPayload }, health: { ok: true, status: 200, payload: healthPayload },
@@ -122,7 +130,8 @@ assert.equal(productionRejectsLab.overall.view_state, 'N/D');
 
 const labAccepted = State.buildModel({
   previous: State.createInitialModel({ allowControlledLab: true }), nowMs: now, allowControlledLab: true,
-  hunter: { ok: true, status: 200, payload: labPayload }, health: { ok: true, status: 200, payload: healthPayload },
+  hunter: { ok: true, status: 200, payload: labPayload }, health: { ok: true, status: 200, payload: labHealthPayload },
+  expectedSourceSha: 'a'.repeat(40), expectedContractChecksum: `sha256:${'c'.repeat(64)}`,
 });
 assert.equal(labAccepted.environment, 'controlled_lab');
 assert.equal(labAccepted.sources.hunter.view_state, 'FRESH');
@@ -131,10 +140,19 @@ assert.equal(labAccepted.release_sha, null);
 
 const labTransportFailure = State.buildModel({
   previous: State.createInitialModel({ allowControlledLab: true }), nowMs: now, allowControlledLab: true,
-  hunter: { ok: false, status: 503, error: { code: 'network_error' } }, health: { ok: true, status: 200, payload: healthPayload },
+  hunter: { ok: false, status: 503, error: { code: 'network_error' } }, health: { ok: true, status: 200, payload: labHealthPayload },
 });
 assert.equal(labTransportFailure.environment, 'controlled_lab');
-assert.equal(labTransportFailure.overall.view_state, 'UNAVAILABLE');
+assert.equal(labTransportFailure.overall.view_state, 'DEGRADED');
+
+const labHealthInvalid = State.buildModel({
+  previous: State.createInitialModel({ allowControlledLab: true }), nowMs: now, allowControlledLab: true,
+  expectedSourceSha: 'a'.repeat(40), expectedContractChecksum: `sha256:${'c'.repeat(64)}`,
+  hunter: { ok: true, status: 200, payload: labPayload },
+  health: { ok: true, status: 200, payload: { ...labHealthPayload, contract_checksum: `sha256:${'d'.repeat(64)}` } },
+});
+assert.equal(labHealthInvalid.sources.health.view_state, 'N/D');
+assert.equal(labHealthInvalid.overall.view_state, 'N/D');
 
 async function runNetworkContracts() {
   const ok = await State.fetchJsonContract(async () => ({

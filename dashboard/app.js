@@ -7,6 +7,8 @@
   const POLL_MS = 15_000;
   const MAX_AGE_MS = 90_000;
   const COMPILED_LAB = document.body.dataset.environment === 'controlled_lab';
+  const EXPECTED_SOURCE_SHA = COMPILED_LAB ? document.body.dataset.sourceSha : null;
+  const EXPECTED_CONTRACT_CHECKSUM = COMPILED_LAB ? document.body.dataset.contractChecksum : null;
   const REASON_LABELS = Object.freeze({
     awaiting_first_response: 'Esperando primera respuesta', awaiting_required_sources: 'Esperando fuentes requeridas',
     contract_valid_and_fresh: 'Contrato válido y actualizado', lab_contract_valid_and_fresh: 'Evidencia de laboratorio válida y vigente',
@@ -79,7 +81,7 @@
     renderSource('hunter', hunter); renderSource('health', health); renderHuntLive(hunter);
     $('lab-panel').hidden = !COMPILED_LAB; $('runtime-panel').hidden = COMPILED_LAB; $('health-panel').hidden = COMPILED_LAB; $('findings-panel').hidden = COMPILED_LAB; $('qualification-panel').hidden = COMPILED_LAB;
     const labPayload = COMPILED_LAB && hunter.payload && hunter.payload.environment === 'controlled_lab' ? hunter.payload : null;
-    $('lab-state').textContent = COMPILED_LAB ? hunter.view_state : 'N/D'; $('lab-reportable').textContent = 'NO'; renderTime($('lab-cycle'), labPayload && labPayload.cycle_finished_at); $('lab-policy').textContent = text(labPayload && labPayload.policy_id); $('lab-control').textContent = labPayload && labPayload.control_finding_count === 0 ? 'LIMPIO · 0' : 'N/D'; $('lab-egress').textContent = labPayload && labPayload.egress_blocked === true ? 'BLOQUEADO' : 'N/D'; $('lab-cleanup').textContent = labPayload && labPayload.cleanup_verified === true ? 'VERIFICADO' : 'N/D';
+    $('lab-state').textContent = COMPILED_LAB ? next.overall.view_state : 'N/D'; $('lab-reportable').textContent = 'NO'; renderTime($('lab-cycle'), labPayload && labPayload.cycle_finished_at); $('lab-policy').textContent = text(labPayload && labPayload.policy_id); $('lab-control').textContent = labPayload && labPayload.control_finding_count === 0 ? 'LIMPIO · 0' : 'N/D'; $('lab-egress').textContent = labPayload && labPayload.egress_blocked === true ? 'BLOQUEADO' : 'N/D'; $('lab-cleanup').textContent = labPayload && labPayload.cleanup_verified === true ? 'VERIFICADO' : 'N/D';
     $('hunter-state').textContent = text(hunter.payload && hunter.payload.state); renderTime($('heartbeat-at'), hunter.payload && hunter.payload.heartbeat_at); renderTime($('last-started-at'), hunter.payload && hunter.payload.last_started_at); renderTime($('last-completed-at'), hunter.payload && hunter.payload.last_completed_at); renderTime($('next-scheduled-at'), hunter.payload && hunter.payload.next_scheduled_at);
     $('health-status').textContent = text(health.payload && health.payload.status); $('health-version').textContent = text(health.payload && health.payload.version); renderRelease($('health-release'), health.payload && health.payload.release_sha); $('health-uptime').textContent = formatDuration(health.payload && health.payload.process_uptime_ms);
     $('release-change').hidden = !next.release_changed;
@@ -93,7 +95,7 @@
     polling = true;
     try {
       const [hunter, health] = await Promise.all([State.fetchJsonContract(window.fetch.bind(window), ENDPOINTS.hunter), State.fetchJsonContract(window.fetch.bind(window), ENDPOINTS.health)]);
-      render(State.buildModel({ previous: model, hunter, health, nowMs: Date.now(), maxAgeMs: MAX_AGE_MS, allowControlledLab: COMPILED_LAB }));
+      render(State.buildModel({ previous: model, hunter, health, nowMs: Date.now(), maxAgeMs: MAX_AGE_MS, allowControlledLab: COMPILED_LAB, expectedSourceSha: EXPECTED_SOURCE_SHA, expectedContractChecksum: EXPECTED_CONTRACT_CHECKSUM }));
     } finally { polling = false; }
   }
   function schedule() { if (timer) clearInterval(timer); timer = setInterval(poll, POLL_MS); }

@@ -14,6 +14,10 @@
     'false_positive_count', 'false_negative_count', 'unauthorized_connection_count', 'cleanup_verified', 'egress_blocked',
     'request_budget_verified', 'evidence_checksum', 'message',
   ]);
+  const LAB_HEALTH_KEYS = new Set([
+    'schema_version', 'environment', 'status', 'mode', 'reportable', 'source_sha', 'contract_checksum',
+    'observed_at', 'fresh_until', 'unavailable_after', 'promotion_ready', 'promotion_blocker',
+  ]);
   const DEFAULT_MAX_AGE_MS = 90_000;
 
   function isObject(value) { return Boolean(value) && typeof value === 'object' && !Array.isArray(value); }
@@ -22,7 +26,7 @@
   function initialSource(name, endpoint) { return { name, endpoint, view_state: VIEW_STATES.LOADING, reason: 'awaiting_first_response', source_timestamp: null, received_at: null, age_ms: null, http_status: null, payload: null }; }
   function createInitialModel(options = {}) { const lab = options.allowControlledLab === true; return { overall: { view_state: VIEW_STATES.LOADING, reason: 'awaiting_required_sources', timestamp: null }, sources: { hunter: initialSource('hunter', '/api/hunter/status'), health: initialSource('health', '/api/health') }, environment: lab ? 'controlled_lab' : 'production', release_sha: null, release_changed: false, updated_at: null }; }
 
-  function validateLabHunterPayload(payload) {
+  function validateLabHunterPayload(payload, options = {}) {
     const keys = Object.keys(payload);
     if (keys.length !== LAB_CONTRACT_KEYS.size || keys.some((key) => !LAB_CONTRACT_KEYS.has(key))) return { valid: false, reason: 'lab_contract_fields_invalid' };
     if (payload.schema_version !== 1 || payload.environment !== 'controlled_lab') return { valid: false, reason: 'lab_contract_identity_invalid' };
@@ -35,6 +39,7 @@
     if (!(ordered[0] <= ordered[1] && ordered[1] <= ordered[2] && ordered[2] <= ordered[3] && ordered[3] <= ordered[4])) return { valid: false, reason: 'lab_contract_timestamps_inconsistent' };
     if (payload.finding_count !== 1 || payload.control_finding_count !== 0 || payload.false_positive_count !== 0 || payload.false_negative_count !== 0 || payload.unauthorized_connection_count !== 0) return { valid: false, reason: 'lab_contract_controls_invalid' };
     if (payload.cleanup_verified !== true || payload.egress_blocked !== true || payload.request_budget_verified !== true) return { valid: false, reason: 'lab_contract_gates_invalid' };
+    if (options.expectedSourceSha && payload.source_sha !== options.expectedSourceSha) return { valid: false, reason: 'lab_contract_source_sha_mismatch' };
     return { valid: true, timestamp: payload.observed_at, kind: 'controlled_lab', freshUntil: payload.fresh_until, unavailableAfter: payload.unavailable_after };
   }
 
@@ -42,7 +47,7 @@
     if (!isObject(payload)) return { valid: false, reason: 'hunter_payload_not_object' };
     if (payload.environment === 'controlled_lab') {
       if (options.allowControlledLab !== true) return { valid: false, reason: 'controlled_lab_not_allowed_in_production_build' };
-      return validateLabHunterPayload(payload);
+      return validateLabHunterPayload(payload, options);
     }
     if (!HUNTER_STATES.has(payload.state)) return { valid: false, reason: 'hunter_state_invalid_or_missing' };
     const timestamp = validIso(payload.timestamp);
@@ -51,8 +56,28 @@
     return { valid: true, timestamp, kind: 'runtime' };
   }
 
-  function validateHealthPayload(payload) {
+  function validateLabHealthPayload(payload, options = {}) {
+    const keys = Object.keys(payload);
+    if (keys.length !== LAB_HEALTH_KEYS.size || keys.some((key) => !LAB_HEALTH_KEYS.has(key))) return { valid: false, reason: 'lab_health_fields_invalid' };
+    if (payload.schema_version !== 1 || payload.environment !== 'controlled_lab' || payload.mode !== 'controlled_lab_preview') return { valid: false, reason: 'lab_health_identity_invalid' };
+    if (!LAB_VIEW_STATES.has(payload.status) || payload.reportable !== false) return { valid: false, reason: 'lab_health_state_invalid' };
+    if (!/^[a-f0-9]{40}$/.test(String(payload.source_sha || '')) || !/^sha256:[a-f0-9]{64}$/.test(String(payload.contract_checksum || ''))) return { valid: false, reason: 'lab_health_provenance_invalid' };
+    if (payload.promotion_ready !== false || payload.promotion_blocker !== 'CONTROLLED_LAB_PREVIEW') return { valid: false, reason: 'lab_health_promotion_policy_invalid' };
+    const observed = validIso(payload.observed_at), freshUntil = validIso(payload.fresh_until), unavailableAfter = validIso(payload.unavailable_after);
+    if (!observed || !freshUntil || !unavailableAfter) return { valid: false, reason: 'lab_health_timestamp_invalid' };
+    if (!(Date.parse(observed) < Date.parse(freshUntil) && Date.parse(freshUntil) < Date.parse(unavailableAfter))) return { valid: false, reason: 'lab_health_timestamp_invalid' };
+    if (options.expectedSourceSha && payload.source_sha !== options.expectedSourceSha) return { valid: false, reason: 'lab_health_source_sha_mismatch' };
+    if (options.expectedContractChecksum && payload.contract_checksum !== options.expectedContractChecksum) return { valid: false, reason: 'lab_health_contract_checksum_mismatch' };
+    return { valid: true, timestamp: observed, kind: 'controlled_lab', freshUntil, unavailableAfter };
+  }
+
+  function validateHealthPayload(payload, options = {}) {
     if (!isObject(payload)) return { valid: false, reason: 'health_payload_not_object' };
+    if (payload.environment === 'controlled_lab') {
+      if (options.allowControlledLab !== true) return { valid: false, reason: 'controlled_lab_health_not_allowed_in_production_build' };
+      return validateLabHealthPayload(payload, options);
+    }
+    if (options.allowControlledLab === true) return { valid: false, reason: 'production_health_not_allowed_in_lab_build' };
     if (!['ok', 'degraded'].includes(payload.status)) return { valid: false, reason: 'health_status_invalid_or_missing' };
     const timestamp = validIso(payload.timestamp);
     if (!timestamp) return { valid: false, reason: 'health_timestamp_invalid_or_missing' };
@@ -65,7 +90,7 @@
     if (!transport || transport.pending === true) return base;
     if (transport.error) return { ...base, view_state: VIEW_STATES.UNAVAILABLE, reason: safeString(transport.error.code) || safeString(transport.error.message) || 'network_error', received_at: receivedAt, http_status: Number.isInteger(transport.status) ? transport.status : null };
     if (!transport.ok) return { ...base, view_state: VIEW_STATES.UNAVAILABLE, reason: Number.isInteger(transport.status) ? `http_${transport.status}` : 'non_success_response', received_at: receivedAt, http_status: Number.isInteger(transport.status) ? transport.status : null };
-    const validation = name === 'hunter' ? validateHunterPayload(transport.payload, options) : validateHealthPayload(transport.payload);
+    const validation = name === 'hunter' ? validateHunterPayload(transport.payload, options) : validateHealthPayload(transport.payload, options);
     if (!validation.valid) return { ...base, view_state: VIEW_STATES.ND, reason: validation.reason, received_at: receivedAt, http_status: Number.isInteger(transport.status) ? transport.status : 200 };
     const sourceMs = Date.parse(validation.timestamp);
     if (validation.kind === 'controlled_lab' && sourceMs > nowMs) return { ...base, view_state: VIEW_STATES.ND, reason: 'lab_contract_timestamp_future', received_at: receivedAt, http_status: 200 };
@@ -75,7 +100,7 @@
     if (validation.kind === 'controlled_lab') {
       if (nowMs > Date.parse(validation.unavailableAfter) || transport.payload.status === 'UNAVAILABLE') { viewState = VIEW_STATES.UNAVAILABLE; reason = 'lab_evidence_expired'; }
       else if (nowMs > Date.parse(validation.freshUntil) || transport.payload.status === 'STALE') { viewState = VIEW_STATES.STALE; reason = 'lab_evidence_stale'; }
-      else reason = 'lab_contract_valid_and_fresh';
+      else reason = name === 'hunter' ? 'lab_contract_valid_and_fresh' : 'lab_health_valid_and_fresh';
     } else if (ageMs > maxAgeMs) { viewState = VIEW_STATES.STALE; reason = 'source_timestamp_stale'; }
     else if (name === 'hunter') {
       const freshness = transport.payload.freshness;
@@ -103,11 +128,12 @@
     const maxAgeMs = Number.isFinite(options.maxAgeMs) ? options.maxAgeMs : DEFAULT_MAX_AGE_MS;
     const allowControlledLab = options.allowControlledLab === true;
     const previous = options.previous && isObject(options.previous) ? options.previous : createInitialModel({ allowControlledLab });
-    const hunter = options.hunter === undefined ? previous.sources.hunter : sourceFromTransport('hunter', '/api/hunter/status', options.hunter, nowMs, maxAgeMs, { allowControlledLab });
-    const health = options.health === undefined ? previous.sources.health : sourceFromTransport('health', '/api/health', options.health, nowMs, maxAgeMs, { allowControlledLab });
+    const validationOptions = { allowControlledLab, expectedSourceSha: options.expectedSourceSha, expectedContractChecksum: options.expectedContractChecksum };
+    const hunter = options.hunter === undefined ? previous.sources.hunter : sourceFromTransport('hunter', '/api/hunter/status', options.hunter, nowMs, maxAgeMs, validationOptions);
+    const health = options.health === undefined ? previous.sources.health : sourceFromTransport('health', '/api/health', options.health, nowMs, maxAgeMs, validationOptions);
     if (allowControlledLab) {
       return {
-        overall: { view_state: hunter.view_state, reason: hunter.reason, timestamp: new Date(nowMs).toISOString() },
+        overall: deriveOverall({ hunter, health }, nowMs),
         sources: { hunter, health },
         environment: 'controlled_lab',
         release_sha: null,
@@ -136,5 +162,5 @@
     finally { if (timer) clearTimeout(timer); }
   }
 
-  return { VIEW_STATES, DEFAULT_MAX_AGE_MS, createInitialModel, validateHunterPayload, validateLabHunterPayload, validateHealthPayload, sourceFromTransport, deriveOverall, buildModel, fetchJsonContract };
+  return { VIEW_STATES, DEFAULT_MAX_AGE_MS, createInitialModel, validateHunterPayload, validateLabHunterPayload, validateLabHealthPayload, validateHealthPayload, sourceFromTransport, deriveOverall, buildModel, fetchJsonContract };
 });
