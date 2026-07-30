@@ -1,0 +1,136 @@
+name: BOQA ARQ Preserved Remediation V1
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boqa-arq-preserved-remediation-v1
+  cancel-in-progress: true
+
+jobs:
+  validate-preserved-remediation:
+    if: github.head_ref == 'ops/boqa-arq-recovery-c6e-v1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PARENT_SHA: c6ede91f758327d111f59db38920b7ccd24cba42
+      PRESERVED_SHA: db4d44c81ae3514b587f922ca14a13d8710c3a9b
+      PRESERVED_TREE: 878f1b62e37430abf8e5ab156201d81d4899ff98
+      OUTPUT_DIR: output/boqa-arq-preserved-remediation-v1
+
+    steps:
+      - name: Checkout operational runner branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Materialize preserved remediation tree
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          git fetch --no-tags origin ops/boqa-arq-preserved-remediation-v1
+          git worktree add --detach preserved-source FETCH_HEAD
+          test "$(git -C preserved-source rev-parse HEAD)" = "$PRESERVED_SHA"
+          test "$(git -C preserved-source rev-parse HEAD^)" = "$PARENT_SHA"
+          test "$(git -C preserved-source rev-parse 'HEAD^{tree}')" = "$PRESERVED_TREE"
+          test -z "$(git -C preserved-source status --porcelain)"
+          git -C preserved-source archive --format=tar.gz --output="../$OUTPUT_DIR/boqa-preserved-remediation-$PRESERVED_SHA.tar.gz" HEAD
+
+      - name: Reproducible install
+        working-directory: preserved-source
+        run: npm ci
+
+      - name: Syntax and structural gates
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd preserved-source
+          node --check server.js
+          while IFS= read -r file; do node --check "$file"; done < <(find lib routes scripts test dashboard -type f -name '*.js' -print | sort)
+          node --input-type=module --check < worker.js
+          bash -n scripts/safe-lab-preview-upload-v1.sh
+          test ! -e .github/workflows/boqa-source-snapshot.yml
+          test "$(find test -maxdepth 1 -type f -name 'test-*.js' | wc -l)" -eq 38
+          ! grep -R -n --include='*.js' --include='*.json' '\bstorage_valid\b' lib schemas dashboard test scripts
+          ! grep -R -n -- '--keep-vars' .github scripts test
+
+      - name: Focused remediation gates
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd preserved-source
+          node test/test-safe-lab-hunter-contract-v1.js
+          node test/test-safe-lab-hunter-contract-negative-v1.js
+          node test/test-safe-lab-evidence-chain-v1.js
+          node test/test-safe-lab-worker-preview-v1.js
+          node test/test-safe-lab-worker-isolation-v2.js
+          node test/test-safe-lab-preview-bundle-verifier-v1.js
+          node test/test-dashboard-state.js
+          node test/test-dashboard-smoke.js
+          node test/test-public-private-boundary.js
+          node test/test-worker-dashboard-contract.js
+
+      - name: Full 38-file regression suite
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          find preserved-source/test -maxdepth 1 -type f -name 'test-*.js' -printf '%f\n' | sort > "$OUTPUT_DIR/test-files.txt"
+          test "$(wc -l < "$OUTPUT_DIR/test-files.txt")" -eq 38
+          (
+            cd preserved-source
+            npm test
+          ) 2>&1 | tee "$OUTPUT_DIR/full-suite.log"
+
+      - name: Package validated source and dependency state
+        if: always()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          if test -d preserved-source/node_modules; then
+            tar -C preserved-source -czf "$OUTPUT_DIR/node_modules-node20-linux-x64.tar.gz" node_modules
+          fi
+          jq -n \
+            --arg parent_sha "$PARENT_SHA" \
+            --arg preserved_sha "$PRESERVED_SHA" \
+            --arg preserved_tree "$PRESERVED_TREE" \
+            --arg workflow "$GITHUB_WORKFLOW" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            '{
+              parent_sha: $parent_sha,
+              preserved_sha: $preserved_sha,
+              preserved_tree: $preserved_tree,
+              workflow: $workflow,
+              repository: $repository,
+              run_id: $run_id,
+              run_attempt: $run_attempt,
+              production_changed: false,
+              pr34_head_changed: false
+            }' > "$OUTPUT_DIR/recovery-manifest.json"
+          (
+            cd "$OUTPUT_DIR"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\n' | sort | xargs -r sha256sum > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+
+      - name: Upload preserved remediation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: boqa-arq-preserved-remediation-v1-${{ github.sha }}
+          path: output/boqa-arq-preserved-remediation-v1/
+          if-no-files-found: error
+          retention-days: 7
