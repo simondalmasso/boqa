@@ -1,0 +1,198 @@
+name: BOQA ARQ Final Overlay Validation V1
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boqa-arq-final-overlay-validation-v1
+  cancel-in-progress: true
+
+jobs:
+  validate-final-overlay:
+    if: github.head_ref == 'ops/boqa-arq-final-validation-v1'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TARGET_SHA: c6ede91f758327d111f59db38920b7ccd24cba42
+      TARGET_TREE: b568cc43bba1bc124129ffefcb294d4fa8d806a2
+      TARGET_LOCK_BLOB: da5ba0fd4ce6c2479a7b7e45cb6f359eb828df09
+      OVERLAY_SHA256: 29aa05ad02b8a0a2b2810c151b36691232da0c8f3a2ae8e3ce97da1614252d8c
+      OUTPUT_DIR: output/boqa-arq-final-overlay-validation-v1
+
+    steps:
+      - name: Checkout operational validation branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Materialize exact PR34 head and apply exact overlay
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          git fetch --no-tags origin "$TARGET_SHA"
+          git worktree add --detach exact-source FETCH_HEAD
+          test "$(git -C exact-source rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git -C exact-source rev-parse 'HEAD^{tree}')" = "$TARGET_TREE"
+          test -z "$(git -C exact-source status --porcelain)"
+
+          cat .boqa-recovery/overlay.part.* | base64 --decode > "$OUTPUT_DIR/final-overlay.tar.gz"
+          echo "$OVERLAY_SHA256  $OUTPUT_DIR/final-overlay.tar.gz" | sha256sum -c -
+          tar -tzf "$OUTPUT_DIR/final-overlay.tar.gz" > "$OUTPUT_DIR/overlay-files.txt"
+          ! awk '$0 ~ /^\// || $0 ~ /(^|\/)\.\.(\/|$)/ { bad=1 } END { exit bad ? 0 : 1 }' "$OUTPUT_DIR/overlay-files.txt"
+          tar -xzf "$OUTPUT_DIR/final-overlay.tar.gz" -C exact-source --no-same-owner
+
+      - name: Verify exact scope and immutable dependency lock
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cat > "$OUTPUT_DIR/expected-paths.txt" <<'EOF'
+          .github/workflows/boqa-safe-lab-hunter-preview-v1.yml
+          dashboard/app.js
+          dashboard/dashboard-state.js
+          lib/safe-lab-contract-common-v1.js
+          lib/safe-lab-evidence-chain-v1.js
+          lib/safe-lab-hunter-contract-v1.js
+          scripts/build-safe-lab-preview-bundle.js
+          scripts/finalize-safe-lab-preview-artifact-v1.js
+          scripts/generate-safe-lab-contract.js
+          scripts/safe-lab-preview-smoke-v1.js
+          scripts/safe-lab-preview-upload-v1.sh
+          scripts/verify-safe-lab-evidence-chain-v1.js
+          scripts/verify-safe-lab-preview-bundle.js
+          scripts/verify-safe-lab-temporal-states.js
+          test/support/safe-lab-contract-fixture-v1.js
+          test/test-dashboard-state.js
+          test/test-safe-lab-evidence-chain-v1.js
+          test/test-safe-lab-hunter-contract-negative-v1.js
+          test/test-safe-lab-hunter-contract-v1.js
+          test/test-safe-lab-preview-bundle-verifier-v1.js
+          test/test-safe-lab-worker-isolation-v2.js
+          worker.js
+          EOF
+          sed -i 's/^          //' "$OUTPUT_DIR/expected-paths.txt"
+          sort -o "$OUTPUT_DIR/expected-paths.txt" "$OUTPUT_DIR/expected-paths.txt"
+
+          git -C exact-source add -N .
+          git -C exact-source diff --name-only | sort > "$OUTPUT_DIR/actual-paths.txt"
+          diff -u "$OUTPUT_DIR/expected-paths.txt" "$OUTPUT_DIR/actual-paths.txt"
+          test "$(git -C exact-source hash-object package-lock.json)" = "$TARGET_LOCK_BLOB"
+          git -C exact-source diff --exit-code -- package.json package-lock.json
+          git -C exact-source diff --check
+          test "$(find exact-source/test -maxdepth 1 -type f -name 'test-*.js' | wc -l)" -eq 38
+
+      - name: Reproducible install
+        working-directory: exact-source
+        run: npm ci
+
+      - name: Syntax, shell, policy and secret gates
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd exact-source
+          node --check server.js
+          while IFS= read -r file; do node --check "$file"; done < <(find lib routes scripts test dashboard -type f -name '*.js' -print | sort)
+          node --input-type=module --check < worker.js
+          bash -n scripts/safe-lab-preview-upload-v1.sh
+          test ! -e .github/workflows/boqa-source-snapshot.yml
+          ! grep -R -n --include='*.js' --include='*.json' '\bstorage_valid\b' lib schemas dashboard test scripts
+          if git diff "$TARGET_SHA" -- . | grep -E '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{20,})'; then
+            echo 'SECRET_SCAN=FAIL' >&2
+            exit 1
+          fi
+
+      - name: Focused Safe Lab gates
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd exact-source
+          {
+            node test/test-safe-lab-hunter-contract-v1.js
+            node test/test-safe-lab-hunter-contract-negative-v1.js
+            node test/test-safe-lab-evidence-chain-v1.js
+            node test/test-safe-lab-worker-preview-v1.js
+            node test/test-safe-lab-worker-isolation-v2.js
+            node test/test-safe-lab-preview-bundle-verifier-v1.js
+            node test/test-dashboard-state.js
+            node test/test-dashboard-smoke.js
+            node test/test-public-private-boundary.js
+            node test/test-worker-dashboard-contract.js
+          } 2>&1 | tee "../$OUTPUT_DIR/focused-gates.log"
+
+      - name: Full 38-file regression suite
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          (
+            cd exact-source
+            npm test
+          ) 2>&1 | tee "$OUTPUT_DIR/full-suite.log"
+          grep -F 'Total:    38' "$OUTPUT_DIR/full-suite.log"
+          grep -F 'Passed:   38' "$OUTPUT_DIR/full-suite.log"
+          grep -F 'Failed:   0' "$OUTPUT_DIR/full-suite.log"
+          grep -F 'Errored:  0' "$OUTPUT_DIR/full-suite.log"
+
+      - name: Freeze exact validated tree and evidence
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git -C exact-source add -A
+          git -C exact-source diff --cached --name-only | sort > "$OUTPUT_DIR/staged-paths.txt"
+          diff -u "$OUTPUT_DIR/expected-paths.txt" "$OUTPUT_DIR/staged-paths.txt"
+          final_tree="$(git -C exact-source write-tree)"
+          git -C exact-source archive --format=tar.gz --output="../$OUTPUT_DIR/validated-source-$final_tree.tar.gz" "$final_tree"
+          jq -n \
+            --arg validation PASS \
+            --arg target_sha "$TARGET_SHA" \
+            --arg target_tree "$TARGET_TREE" \
+            --arg final_tree "$final_tree" \
+            --arg overlay_sha256 "$OVERLAY_SHA256" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg workflow "$GITHUB_WORKFLOW" \
+            --arg job "$GITHUB_JOB" \
+            --arg run_id "$GITHUB_RUN_ID" \
+            --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg operational_head_sha "${{ github.event.pull_request.head.sha }}" \
+            '{
+              validation: $validation,
+              target_sha: $target_sha,
+              target_tree: $target_tree,
+              final_tree: $final_tree,
+              overlay_sha256: $overlay_sha256,
+              repository: $repository,
+              workflow: $workflow,
+              job: $job,
+              run_id: $run_id,
+              run_attempt: $run_attempt,
+              operational_head_sha: $operational_head_sha,
+              test_files: 38,
+              production_changed: false,
+              pr34_head_changed: false
+            }' > "$OUTPUT_DIR/validation-manifest.json"
+          (
+            cd "$OUTPUT_DIR"
+            find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\n' | sort | xargs sha256sum > SHA256SUMS
+            sha256sum -c SHA256SUMS
+          )
+
+      - name: Upload final pre-publication validation artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: boqa-arq-final-overlay-validation-v1-${{ github.event.pull_request.head.sha }}
+          path: output/boqa-arq-final-overlay-validation-v1/
+          if-no-files-found: error
+          retention-days: 14
