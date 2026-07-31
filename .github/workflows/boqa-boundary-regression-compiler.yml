@@ -1,5 +1,6 @@
 name: BOQA Boundary Regression Compiler
 
+# Draft creation uses a HEAD [skip ci] commit so inherited Cloudflare PR workflows do not run.
 on:
   pull_request:
     branches: [main]
