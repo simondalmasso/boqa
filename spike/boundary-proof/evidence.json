@@ -1,0 +1,260 @@
+{
+  "schema": "boqa.boundary.evidence.v1",
+  "mission_id": "BOQA-005",
+  "lab_mode": "vulnerable",
+  "source_finding_id": "finding-project-object-owner-bypass",
+  "deterministic_identity": {
+    "route_graph_sha256": "244b20b7826b4b06e5a6b039bfa966a9dc4ba434c79e38a8afbea97cba38cec5",
+    "contract_sha256": "18b309099e20b62f083eae3363d431f931f243e3e8670b02f2c26dccf07fb5ae",
+    "generated_test_sha256": "b0df95eecfdf4e459f7a4eec2028305225a426dfc7f231e7f114c502dd16979d"
+  },
+  "variant_discovery": {
+    "generated_count": 2,
+    "generated_route_ids": [
+      "project-audit",
+      "project-export"
+    ],
+    "manual_variant_configuration": false
+  },
+  "execution": {
+    "actor_model": [
+      "owner_control",
+      "outsider_control"
+    ],
+    "external_targets": 0,
+    "receipts": [
+      {
+        "candidate": {
+          "id": "seed-project-read",
+          "route_id": "project-read",
+          "method": "GET",
+          "path": "/api/projects/project-alpha",
+          "source": "known_finding"
+        },
+        "owner": {
+          "actor": "owner_control",
+          "route_id": "project-read",
+          "method": "GET",
+          "path": "/api/projects/project-alpha",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "99989f2df6f3f62f6cdefedc7fc51d9980e68cbb8c74b1d95cdbce0fefde0320",
+          "semantic": {
+            "kind": "private_project_resource",
+            "marker": "project-private:project-alpha",
+            "owner_id": "owner-alpha",
+            "project_id": "project-alpha",
+            "operation": "read",
+            "reason": null
+          }
+        },
+        "outsider": {
+          "actor": "outsider_control",
+          "route_id": "project-read",
+          "method": "GET",
+          "path": "/api/projects/project-alpha",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "99989f2df6f3f62f6cdefedc7fc51d9980e68cbb8c74b1d95cdbce0fefde0320",
+          "semantic": {
+            "kind": "private_project_resource",
+            "marker": "project-private:project-alpha",
+            "owner_id": "owner-alpha",
+            "project_id": "project-alpha",
+            "operation": "read",
+            "reason": null
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "variant-project-audit",
+          "route_id": "project-audit",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/audit",
+          "source": "inferred_related_variant"
+        },
+        "owner": {
+          "actor": "owner_control",
+          "route_id": "project-audit",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/audit",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "3dc54b3a44e07265eb820317b165a8eeaf27ba4f022c86e28c8f014b0795e8d8",
+          "semantic": {
+            "kind": "private_project_resource",
+            "marker": "project-private:project-alpha",
+            "owner_id": "owner-alpha",
+            "project_id": "project-alpha",
+            "operation": "audit",
+            "reason": null
+          }
+        },
+        "outsider": {
+          "actor": "outsider_control",
+          "route_id": "project-audit",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/audit",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "3dc54b3a44e07265eb820317b165a8eeaf27ba4f022c86e28c8f014b0795e8d8",
+          "semantic": {
+            "kind": "private_project_resource",
+            "marker": "project-private:project-alpha",
+            "owner_id": "owner-alpha",
+            "project_id": "project-alpha",
+            "operation": "audit",
+            "reason": null
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "variant-project-export",
+          "route_id": "project-export",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/export",
+          "source": "inferred_related_variant"
+        },
+        "owner": {
+          "actor": "owner_control",
+          "route_id": "project-export",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/export",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "dae9d1938de19d82c38971274c6e8bc52d03af79e6fa4e48ef29fa328b5669cd",
+          "semantic": {
+            "kind": "private_project_resource",
+            "marker": "project-private:project-alpha",
+            "owner_id": "owner-alpha",
+            "project_id": "project-alpha",
+            "operation": "export",
+            "reason": null
+          }
+        },
+        "outsider": {
+          "actor": "outsider_control",
+          "route_id": "project-export",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/export",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "dae9d1938de19d82c38971274c6e8bc52d03af79e6fa4e48ef29fa328b5669cd",
+          "semantic": {
+            "kind": "private_project_resource",
+            "marker": "project-private:project-alpha",
+            "owner_id": "owner-alpha",
+            "project_id": "project-alpha",
+            "operation": "export",
+            "reason": null
+          }
+        }
+      },
+      {
+        "candidate": {
+          "id": "control-project-summary",
+          "route_id": "project-summary",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/summary",
+          "source": "public_non_private_resource"
+        },
+        "owner": {
+          "actor": "owner_control",
+          "route_id": "project-summary",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/summary",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "3817b010e405bcbbaa5d47c769f2afde2efc902c3edd68067a95f1a4561628a0",
+          "semantic": {
+            "kind": "public_project_summary",
+            "marker": "project-public:project-alpha",
+            "owner_id": null,
+            "project_id": "project-alpha",
+            "operation": "summary",
+            "reason": null
+          }
+        },
+        "outsider": {
+          "actor": "outsider_control",
+          "route_id": "project-summary",
+          "method": "GET",
+          "path": "/api/projects/project-alpha/summary",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_body_sha256": "3817b010e405bcbbaa5d47c769f2afde2efc902c3edd68067a95f1a4561628a0",
+          "semantic": {
+            "kind": "public_project_summary",
+            "marker": "project-public:project-alpha",
+            "owner_id": null,
+            "project_id": "project-alpha",
+            "operation": "summary",
+            "reason": null
+          }
+        }
+      }
+    ]
+  },
+  "oracle": {
+    "status_only_means_vulnerability": false,
+    "results": [
+      {
+        "candidate_id": "seed-project-read",
+        "route_id": "project-read",
+        "path": "/api/projects/project-alpha",
+        "owner_private_control_proven": true,
+        "outsider_same_private_authority_proven": true,
+        "contradiction": true,
+        "verdict": "boundary_contradicted",
+        "basis": "outsider_received_the_same_semantic_private_resource_as_the_owner_control"
+      },
+      {
+        "candidate_id": "variant-project-audit",
+        "route_id": "project-audit",
+        "path": "/api/projects/project-alpha/audit",
+        "owner_private_control_proven": true,
+        "outsider_same_private_authority_proven": true,
+        "contradiction": true,
+        "verdict": "boundary_contradicted",
+        "basis": "outsider_received_the_same_semantic_private_resource_as_the_owner_control"
+      },
+      {
+        "candidate_id": "variant-project-export",
+        "route_id": "project-export",
+        "path": "/api/projects/project-alpha/export",
+        "owner_private_control_proven": true,
+        "outsider_same_private_authority_proven": true,
+        "contradiction": true,
+        "verdict": "boundary_contradicted",
+        "basis": "outsider_received_the_same_semantic_private_resource_as_the_owner_control"
+      },
+      {
+        "candidate_id": "control-project-summary",
+        "route_id": "project-summary",
+        "path": "/api/projects/project-alpha/summary",
+        "owner_private_control_proven": false,
+        "outsider_same_private_authority_proven": false,
+        "contradiction": false,
+        "verdict": "boundary_held",
+        "basis": "semantic_private_owner_control_not_proven_so_http_status_is_not_treated_as_authority"
+      }
+    ]
+  },
+  "metrics": {
+    "true_positives": 3,
+    "false_positives": 0,
+    "false_negatives": 0,
+    "true_negatives": 1,
+    "contradictions": 3,
+    "protected_cases": 3,
+    "public_controls": 1
+  },
+  "exact_outputs": [
+    "boundary-contract.yaml",
+    "boundary-regression.spec.ts",
+    "evidence.json"
+  ],
+  "evidence_payload_sha256": "67b1078279ddd556d15fb1d38d01a64a04d557aafbc72c54c406c8625aa1f7d3"
+}

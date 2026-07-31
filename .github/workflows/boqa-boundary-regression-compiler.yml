@@ -1,0 +1,97 @@
+name: BOQA Boundary Regression Compiler
+
+# Draft creation uses a HEAD [skip ci] commit so inherited Cloudflare PR workflows do not run.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'spike/boundary-proof/**'
+      - '.github/workflows/boqa-boundary-regression-compiler.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boqa-boundary-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  boundary-proof:
+    if: github.event.pull_request.head.ref == 'feat/boundary-regression-compiler-mvp'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      BOUNDARY_OWNER_TOKEN: synthetic-owner-token-for-boqa-005
+      BOUNDARY_OUTSIDER_TOKEN: synthetic-outsider-token-for-boqa-005
+      BOUNDARY_PORT: '43117'
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Reproducible install
+        run: npm ci
+
+      - name: Syntax and unit tests
+        run: |
+          set -Eeuo pipefail
+          find spike/boundary-proof -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+          node --test spike/boundary-proof/test/boundary-proof.test.js
+
+      - name: Compile against vulnerable lab
+        run: |
+          set -Eeuo pipefail
+          out="$RUNNER_TEMP/boundary-proof"
+          mkdir -p "$out"
+          node spike/boundary-proof/lab/server.js --mode vulnerable --port "$BOUNDARY_PORT" >"$RUNNER_TEMP/vulnerable.log" 2>&1 &
+          echo $! >"$RUNNER_TEMP/lab.pid"
+          trap 'kill $(cat "$RUNNER_TEMP/lab.pid") 2>/dev/null || true' EXIT
+          for i in $(seq 1 50); do curl -fsS "http://127.0.0.1:$BOUNDARY_PORT/health" >/dev/null && break; sleep 0.1; done
+          curl -fsS "http://127.0.0.1:$BOUNDARY_PORT/health" >/dev/null
+          node spike/boundary-proof/compile-boundary.js \
+            --base-url "http://127.0.0.1:$BOUNDARY_PORT" \
+            --out-dir "$out" \
+            --lab-mode vulnerable
+          set +e
+          BOUNDARY_BASE_URL="http://127.0.0.1:$BOUNDARY_PORT" node --test "$out/boundary-regression.spec.ts"
+          vulnerable_exit=$?
+          set -e
+          test "$vulnerable_exit" -ne 0
+          echo "$vulnerable_exit" >"$out/vulnerable-test.exit"
+          kill $(cat "$RUNNER_TEMP/lab.pid")
+          wait $(cat "$RUNNER_TEMP/lab.pid") 2>/dev/null || true
+          trap - EXIT
+
+      - name: Run same test against fixed lab
+        run: |
+          set -Eeuo pipefail
+          out="$RUNNER_TEMP/boundary-proof"
+          node spike/boundary-proof/lab/server.js --mode fixed --port "$BOUNDARY_PORT" >"$RUNNER_TEMP/fixed.log" 2>&1 &
+          lab_pid=$!
+          trap 'kill $lab_pid 2>/dev/null || true' EXIT
+          for i in $(seq 1 50); do curl -fsS "http://127.0.0.1:$BOUNDARY_PORT/health" >/dev/null && break; sleep 0.1; done
+          curl -fsS "http://127.0.0.1:$BOUNDARY_PORT/health" >/dev/null
+          BOUNDARY_BASE_URL="http://127.0.0.1:$BOUNDARY_PORT" node --test "$out/boundary-regression.spec.ts"
+          echo 0 >"$out/fixed-test.exit"
+          kill "$lab_pid"
+          wait "$lab_pid" 2>/dev/null || true
+          trap - EXIT
+
+      - name: Verify exact evidence
+        run: |
+          set -Eeuo pipefail
+          out="$RUNNER_TEMP/boundary-proof"
+          test "$(find "$out" -maxdepth 1 -type f \( -name 'boundary-contract.yaml' -o -name 'boundary-regression.spec.ts' -o -name 'evidence.json' \) | wc -l)" -eq 3
+          node -e "const e=require(process.argv[1]); if(e.metrics.true_positives!==3||e.metrics.false_positives!==0||e.metrics.false_negatives!==0||e.variant_discovery.generated_count<1) process.exit(1)" "$out/evidence.json"
+          test "$(cat "$out/vulnerable-test.exit")" -ne 0
+          test "$(cat "$out/fixed-test.exit")" -eq 0
