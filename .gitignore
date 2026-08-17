@@ -39,3 +39,6 @@ wrangler.toml.local
 # Playwright
 /playwright-report/
 /test-results/
+.boqa-paid-work/
+__pycache__/
+*.pyc
