@@ -1,0 +1,14 @@
+{
+  "run_url": "https://github.com/example/project/actions/runs/123456789",
+  "repository": "example/project",
+  "run_id": 123456789,
+  "job_id": 987654321,
+  "job_name": "tests",
+  "failing_step_name": "Run unit tests",
+  "error_message": "FAILED tests/test_example.py::test_value - AssertionError",
+  "stack_trace": [
+    "Traceback (most recent call last):",
+    "File \"tests/test_example.py\", line 12, in test_value"
+  ],
+  "suggested_fix_category": "test_failure"
+}

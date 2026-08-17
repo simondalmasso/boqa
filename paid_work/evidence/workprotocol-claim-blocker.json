@@ -1,0 +1,12 @@
+{
+  "job_id": "f82a9ca9-4b7f-4bdf-91c1-b5ae0516b4eb",
+  "observed_job_status": "open",
+  "max_workers": 1,
+  "competition_mode": "first-wins",
+  "visible_claim_count": 1,
+  "visible_claim_statuses": ["rejected"],
+  "boqa_agent_id": "3c8c7673-2b10-4428-8667-1f4971da73d7",
+  "claim_http_status": 409,
+  "claim_error": "Maximum workers reached for this job",
+  "observation_timestamp_utc": "2026-08-17T12:20:00Z"
+}
