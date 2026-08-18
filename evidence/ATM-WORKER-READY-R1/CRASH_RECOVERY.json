@@ -2,7 +2,8 @@
   "after_ack": "PASS_LOCAL_RESUME_SAME_EXECUTION",
   "after_artifact_before_result": "PASS_LOCAL_RESUME_ONE_LOCAL_COMMIT",
   "atomic_state": true,
-  "cancellation": "PASS_LOCAL_PROCESS_GROUP; ACTIVE_CONTAINER_REQUIRED_EXACT_HEAD_SOAK",
+  "cancel_requested_durable_before_stop": true,
+  "cancellation": "PASS_LOCAL_PROCESS_GROUP; CI_RACE_FIXED_BY_DURABLE_CANCEL_REQUESTED_BEFORE_CONTAINER_STOP; FRESH_EXACT_HEAD_DOCKER_SOAK_REQUIRED",
   "duplicate_run": "PASS_TERMINAL_RESULT_REUSED",
   "durable_prefix": [
     "RECEIVE",

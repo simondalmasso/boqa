@@ -24,5 +24,16 @@
     "local_observed": "PASS_NO_TARGET_MUTATION",
     "repository": "https://github.com/mozarkai/optics-framework"
   },
-  "outgoing_spend_usd": 0
+  "outgoing_spend_usd": 0,
+  "prior_exact_head_ci": {
+    "correction": "bounded /tmp tmpfs raised to 256 MiB; package and lock files unchanged",
+    "error_class": "HYDRATION_FAILED",
+    "exact_target_npm_cache_bytes_reproduced": 92080761,
+    "failed_test": "test-atm-worker-real-world.js",
+    "fresh_exact_head_soak_required": true,
+    "head_sha": "5e92ff4cf58606d1151744376c368e0fcb501377",
+    "prior_tmpfs_bytes": 67108864,
+    "run_id": 32131456813,
+    "target_base_sha": "812c051c7bbc38b9a14f0520f9399a9110c85bd5"
+  }
 }
