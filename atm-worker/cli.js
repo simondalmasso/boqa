@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+const fs=require('fs');const {runJob,resumeJob}=require('./worker'),{cancelRun}=require('./runtime/cancel'),{ExecutionState}=require('./runtime/execution-state');
+function arg(name,a){const i=a.indexOf(name);return i>=0?a[i+1]:null;}function out(v){process.stdout.write(JSON.stringify(v,null,2)+'\n');}
+function main(a=process.argv.slice(2)){const cmd=a[0],root=arg('--run-root',a);if(!['run','resume','cancel','inspect'].includes(cmd)||!root)throw new Error('usage: cli.js run|resume|cancel|inspect --run-root <dir> [--job <job.json>]');if(cmd==='run'){const jf=arg('--job',a);if(!jf)throw new Error('--job required');return out(runJob(JSON.parse(fs.readFileSync(jf,'utf8')),root));}if(cmd==='resume')return out(resumeJob(root));if(cmd==='cancel')return out(cancelRun(root));const s=new ExecutionState(root);return out({state:s.load(),result:s.result()});}
+try{main();}catch(e){process.stderr.write(`${e.code||'ERROR'}:${e.message}\n`);process.exitCode=e.code==='CRASH_INJECTED'?86:2;}

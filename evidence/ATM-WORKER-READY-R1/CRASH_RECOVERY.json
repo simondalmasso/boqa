@@ -1,0 +1,12 @@
+{
+  "execution_identity": "sha256(worker_source_sha + job_id + work_lease_id + scope_hash)",
+  "durable_before_target": ["RECEIVE", "VALIDATE", "ACK"],
+  "ledger": "append-only SHA-256 hash chain",
+  "after_ack": "LOCAL_PASS; target absent before resume",
+  "during_execution": "LOCAL_PASS; deterministic patch resumes without duplicate commit",
+  "after_artifact_before_result": "LOCAL_PASS; resumes same execution/local commit",
+  "duplicate_terminal_run": "LOCAL_PASS; same terminal result returned",
+  "cooperative_process_cancel": "LOCAL_PASS",
+  "active_container_cancel": "REQUIRED_IN_EXACT_HEAD_SOAK",
+  "test_sha256": "3fb93e556674e69581479bac077f7ca0bbba2b004742b8230b1b68cf8b2695e4"
+}

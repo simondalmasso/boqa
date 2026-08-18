@@ -1,0 +1,3 @@
+# Threat model
+
+Targets are hostile. Main risks are prompt/README authority injection, malicious lifecycle scripts, hooks, symlink escapes, secret inheritance, command injection, network pivoting, browser cross-origin escape, artifact credential leakage, resource exhaustion and duplicate mutation after crash. Controls: frozen contract validation, hooks disabled, hydration with lifecycle scripts disabled, `shell:false`, executable allowlists, Docker non-root/cap-drop/no-new-privileges/read-only root/bounds, network-none execution, realpath+diff scope enforcement, secret scan, artifact limits, deterministic execution identity, durable ACK and idempotent terminal results.

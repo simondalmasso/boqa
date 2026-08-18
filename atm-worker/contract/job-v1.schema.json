@@ -1,0 +1,7 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"BOQA ATM job v1",
+  "type":"object",
+  "required":["schema_version","job_id","canonical_opportunity_id","worker_id","work_lease_id","lease_expires_at","scope_hash","frozen_acceptance_criteria","target_repository","target_base_sha","allowed_paths","required_capabilities","structured_requirements","expected_deliverable","deterministic_checks","network_policy","runtime_profile","max_spend_usd"],
+  "properties":{"schema_version":{"const":"boqa_atm_job_v1"},"worker_id":{"const":"boqa"},"target_base_sha":{"pattern":"^[0-9a-f]{40}$"},"max_spend_usd":{"const":0}}
+}

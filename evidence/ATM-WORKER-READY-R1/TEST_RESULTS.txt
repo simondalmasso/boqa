@@ -1,0 +1,19 @@
+BOQA-WR-002-R1 local pre-evidence gates
+DATE=2026-08-18
+NPM_CI=PASS (--ignore-scripts used during worker-development preflight)
+FOCUSED_ATM_WORKER_TEST_FILES=15
+FOCUSED_LOCAL_EXIT=0
+FULL_SUITE_TOTAL=47
+FULL_SUITE_PASSED=47
+FULL_SUITE_FAILED=0
+FULL_SUITE_ERRORED=0
+FULL_SUITE_SKIPPED_BY_RUNNER=0
+FULL_SUITE_EXIT=0
+FULL_SUITE_TIME_SECONDS=75.0
+WORKFLOW_FILES_CHANGED=0
+PACKAGE_FILES_CHANGED=0
+STANDALONE_BOQA_REGRESSION=PASS
+PROJECT_CORE_CONTINUES=YES
+OUTGOING_SPEND_USD=0
+
+Important: Docker/browser-capable worker tests intentionally return a local PASS wrapper with an explicit LOCAL_SKIP when this local runtime lacks Docker/Chromium. Those real boundaries are NOT counted as remotely proven here. ORDER-WR-002 requires the existing exact-head Docker soak to execute them on a Docker-capable runner before READY_FOR_ATM_INTEGRATION.

@@ -1,0 +1,12 @@
+{
+  "default_network": "none",
+  "allowed_navigation": "frozen approved origins only",
+  "blocked": ["unexpected cross-origin", "file:/privileged navigation", "metadata endpoints", "private/link-local origins unless exact approved loopback"],
+  "actions": ["click", "expect_text", "download"],
+  "uploads": "NOT_SUPPORTED_R1_FAIL_CLOSED",
+  "downloads": "run-root/downloads only",
+  "screenshots": "run-root/artifacts only",
+  "route_enforcement": true,
+  "host_test_sha256": "389c6fd2497b05349f46088c3bc863a82caf35b59fe01f534b8bda59c95fcb19",
+  "real_browser_proof": "REQUIRED_IN_EXACT_HEAD_SOAK; test auto-falls back to Playwright Docker when host Chromium is absent"
+}

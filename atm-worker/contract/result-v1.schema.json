@@ -1,0 +1,7 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"BOQA ATM result v1",
+  "type":"object",
+  "required":["schema_version","worker_id","worker_source_sha","job_id","work_lease_id","scope_hash","execution_id","status","outgoing_spend_usd"],
+  "properties":{"schema_version":{"const":"boqa_atm_result_v1"},"worker_id":{"const":"boqa"},"status":{"enum":["COMPLETED","FAILED","REFUSED","CANCELLED","TIMED_OUT","NEEDS_DIFFERENT_WORKER"]},"outgoing_spend_usd":{"const":0}}
+}
