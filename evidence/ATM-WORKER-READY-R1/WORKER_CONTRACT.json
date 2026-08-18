@@ -1,20 +1,40 @@
 {
-  "schema_version": "boqa_atm_job_v1",
-  "job_id": "wr002-contract-example",
-  "canonical_opportunity_id": "https://github.com/philaconvalley/website/issues/117",
-  "worker_id": "boqa",
-  "work_lease_id": "example-lease-r1",
-  "lease_expires_at": "2099-01-01T00:00:00.000Z",
-  "scope_hash": "1a1929afe24622e2baa2fe2226fbc3c1877cfebafa56a358dcf3f976ebd9ec02",
-  "frozen_acceptance_criteria": {"target_sha_exact": true, "ci_failure_classified": true, "evidence_sanitized": true},
-  "target_repository": "https://github.com/philaconvalley/website",
-  "target_base_sha": "812c051c7bbc38b9a14f0520f9399a9110c85bd5",
-  "allowed_paths": ["e2e/contrast.spec.ts"],
-  "required_capabilities": ["CI_TRIAGE", "DETERMINISTIC_REPLAY", "EVIDENCE_GENERATION"],
-  "structured_requirements": {"lease_status": "active", "pre_checks": [], "post_checks": [], "ci_log": "frozen fixture", "replay_fixture": {"seed": "R1", "now": 1700000000000, "recording": {"started_at": 1000, "context_hash": "fixture", "events": [], "step_boundaries": []}}},
-  "expected_deliverable": {"type": "local_evidence"},
-  "deterministic_checks": ["scope_hash", "checkout_sha", "ledger_chain"],
-  "network_policy": {"default": "none", "hydration_origins": ["https://registry.npmjs.org"], "allowed_origins": ["http://127.0.0.1:4321"]},
-  "runtime_profile": {"image": "node:22-bookworm-slim", "allowed_executables": ["node", "npm"], "hydration_commands": []},
-  "max_spend_usd": 0
+  "entrypoints": [
+    "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+    "node atm-worker/cli.js resume --run-root <dir>",
+    "node atm-worker/cli.js cancel --run-root <dir>",
+    "node atm-worker/cli.js inspect --run-root <dir>"
+  ],
+  "execution_id": "sha256(worker_source_sha + job_id + work_lease_id + scope_hash)",
+  "forbidden_result_authority": [
+    "paid",
+    "withdrawable",
+    "claim_success",
+    "submitted_to_marketplace",
+    "marketplace_accepted",
+    "external_checker_accepted",
+    "payout"
+  ],
+  "job_schema": "boqa_atm_job_v1",
+  "max_spend_usd": 0,
+  "result_schema": "boqa_atm_result_v1",
+  "scope_hash": "sha256(stable_canonical_json({target_repository,target_base_sha,allowed_paths,required_capabilities,frozen_acceptance_criteria,structured_requirements,expected_deliverable,deterministic_checks,max_spend_usd,network_policy,runtime_profile}))",
+  "source_support": [
+    "PUBLIC_HTTPS_GITHUB_REPOSITORY",
+    "ATM_PREFETCHED_LOCAL_SNAPSHOT"
+  ],
+  "statuses": [
+    "COMPLETED",
+    "FAILED",
+    "REFUSED",
+    "CANCELLED",
+    "TIMED_OUT",
+    "NEEDS_DIFFERENT_WORKER"
+  ],
+  "unsupported_source": [
+    "PRIVATE_REPO_CREDENTIAL_ACQUISITION",
+    "SUBMODULES",
+    "GIT_LFS"
+  ],
+  "worker_id": "boqa"
 }

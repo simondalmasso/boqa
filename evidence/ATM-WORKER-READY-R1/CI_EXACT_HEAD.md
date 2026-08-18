@@ -1,19 +1,7 @@
 # Exact-head CI contract
 
-Required workflow: `.github/workflows/boqa-real-docker-soak-v1.yml` (`BOQA Real Docker Soak V1`). Workflow files changed by R1: **0**.
+Workflow: `.github/workflows/boqa-real-docker-soak-v1.yml` (`BOQA Real Docker Soak V1`)
+Trigger: existing `workflow_dispatch` only, against `feat/atm-worker-readiness-r1` after the single final `[skip ci]` publication commit.
+Required: run head SHA equals Draft PR head SHA; conclusion `success`; artifact `boqa-real-docker-soak-<head>` digest recorded externally in Issue #37 final ARQ checkpoint.
 
-Publication is a single final commit with message `BOQA: add reusable ATM worker readiness R1 [skip ci]`, followed by one Draft PR. No Cloudflare workflow dispatch is authorized. After publication, only the existing Docker soak may be explicitly dispatched against the exact branch/head.
-
-The exact commit SHA and resulting run/artifact digest cannot be self-referentially embedded into the commit that creates that SHA. They are therefore remote verification facts to be recorded in the Issue #37 checkpoint and terminal ARQ return, without a second evidence-fixing push.
-
-Required external final gate:
-
-- `RUN_HEAD_SHA == exact Draft PR head`
-- conclusion `success`
-- artifact digest recorded exactly
-- real Docker network-none test executed
-- active-container cancellation executed
-- real browser boundary executed (host Chromium or self-contained Playwright Docker fallback)
-- G5 positive shadow executed against exact target SHA
-- no Cloudflare version-producing workflow caused by R1
-- production response/traffic unchanged
+This committed file intentionally cannot contain its own future commit SHA or post-publication run ID without creating a new head. No post-PR evidence push is permitted.

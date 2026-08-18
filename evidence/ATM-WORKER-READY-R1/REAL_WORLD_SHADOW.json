@@ -1,5 +1,28 @@
 {
-  "can_handle": {"repository":"https://github.com/philaconvalley/website","base_sha":"812c051c7bbc38b9a14f0520f9399a9110c85bd5","issue":117,"allowed_paths":["e2e/contrast.spec.ts"],"acceptance":["preserve rgba alpha","composite translucent foreground before luminance","opaque rgb and rgba alpha=1 unchanged","rgba white 0.85 over coral approximately 2.62 not 3.07","focused contrast Playwright spec passes","only allowed path mutates"],"edit":"frozen exact_replace recipe","remote_write":false,"local_observation":"NEGATIVE_PART_PASS; POSITIVE_REQUIRES_DOCKER","final_gate":"EXACT_HEAD_SOAK"},
-  "needs_different_worker": {"repository":"https://github.com/mozarkai/optics-framework","base_sha":"e9613687fdb4267a293867e5889ffe157bda5f75","issue":351,"required_capability":"LARGE_MULTI_MODULE_ARCHITECTURAL_REFACTOR_WITH_RUNTIME_SESSION_MIGRATION","result":"LOCAL_PASS_NEEDS_DIFFERENT_WORKER_BEFORE_TARGET","mutation":0},
-  "test_sha256":"cacaf204ba0d0e966e28f299c6c825b10dd95a44041348c9cd102e78ffe55ba5"
+  "can_handle": {
+    "acceptance": [
+      "preserve alpha from rgba parsing",
+      "composite translucent foreground over background before luminance",
+      "opaque rgb/rgba(...,1) unchanged",
+      "rgba(255,255,255,0.85) over rgb(239,101,127) approximately 2.62 not legacy approximately 3.07",
+      "focused e2e/contrast.spec.ts passes",
+      "only e2e/contrast.spec.ts mutates"
+    ],
+    "allowed_paths": [
+      "e2e/contrast.spec.ts"
+    ],
+    "base_sha": "812c051c7bbc38b9a14f0520f9399a9110c85bd5",
+    "local_status": "SOURCE_VERIFIED_BY_AUTHENTICATED_GITHUB_READ; Docker execution required in exact-head soak",
+    "remote_write": false,
+    "repository": "https://github.com/philaconvalley/website",
+    "spec": "https://github.com/philaconvalley/website/issues/117"
+  },
+  "needs_different_worker": {
+    "base_sha": "e9613687fdb4267a293867e5889ffe157bda5f75",
+    "capability": "LARGE_MULTI_MODULE_ARCHITECTURAL_REFACTOR_WITH_RUNTIME_SESSION_MIGRATION",
+    "expected": "NEEDS_DIFFERENT_WORKER",
+    "local_observed": "PASS_NO_TARGET_MUTATION",
+    "repository": "https://github.com/mozarkai/optics-framework"
+  },
+  "outgoing_spend_usd": 0
 }

@@ -1,5 +1,43 @@
 {
-  "local_pass": ["required field missing", "worker mismatch", "lease mismatch", "lease expired", "terminal lease", "scope hash mismatch", "invalid/full SHA", "checkout SHA mismatch", "nonzero spend", "unsupported capability", "path traversal", "symlink escape", "source type refusal", "oversized contract", "secret artifact sanitization", "unsafe executable refusal", "npm lifecycle-script refusal", "metadata/private browser block", "unexpected cross-origin browser policy", "upload refusal", "artifact file/aggregate bounds", "process timeout", "cooperative process cancellation", "crash after ACK", "crash during execution", "crash after artifact before result", "duplicate terminal idempotency", "out-of-scope patch refusal", "corrupted-final-artifact independent-checker rejection", "NEEDS_DIFFERENT_WORKER before target execution"],
-  "exact_head_soak_required": ["real Docker network-none execution", "ambient secret absent in target container", "active Docker container cancellation", "real browser cross-origin enforcement", "real browser download confinement", "real-world positive shadow on philaconvalley/website#117"],
-  "test_hashes": {"security":"cee18550aff09a7e4a2f57f4a5849b99fae853adbb1933dff1ce3d0eea08f2ea","process_docker":"6fe18678d66f1162314ca24151209394c69a40c8c64fd7475bafad0d3923b388","docker_cancel":"b15d6de705797d6e17c36be45f3296117f1a1202e8680754fa7e91271581df7a","negative":"009148a8ad25f360bcffac120992ced77e2421a0c166053da3a4ca4cebd63c45"}
+  "covered": [
+    "missing fields",
+    "worker mismatch",
+    "lease mismatch",
+    "expired lease",
+    "terminal lease",
+    "scope mismatch",
+    "bad/full SHA",
+    "checkout mismatch",
+    "nonzero spend",
+    "unsupported capability",
+    "path traversal",
+    "symlink escape",
+    ".env not sourced by worker",
+    "git hooks disabled",
+    "prompt injection cannot override job",
+    "unsafe executable rejected",
+    "network-none",
+    "metadata endpoint block",
+    "unexpected cross-origin block",
+    "upload refused",
+    "artifact size bounds",
+    "artifact secret scan",
+    "process timeout",
+    "cooperative cancellation",
+    "crash after ACK",
+    "crash during execution",
+    "crash after artifact before result",
+    "duplicate idempotency",
+    "out-of-scope patch refusal",
+    "corrupted final artifact independent-checker rejection",
+    "oversized process log refusal"
+  ],
+  "docker_only_negatives": "must execute in exact-head soak; local runtime has no Docker daemon",
+  "large_refactor_shadow": {
+    "base_sha": "e9613687fdb4267a293867e5889ffe157bda5f75",
+    "capability": "LARGE_MULTI_MODULE_ARCHITECTURAL_REFACTOR_WITH_RUNTIME_SESSION_MIGRATION",
+    "expected": "NEEDS_DIFFERENT_WORKER",
+    "local_observed": "PASS_NO_TARGET_MUTATION",
+    "repository": "https://github.com/mozarkai/optics-framework"
+  }
 }

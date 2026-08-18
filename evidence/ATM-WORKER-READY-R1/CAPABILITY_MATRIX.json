@@ -1,11 +1,105 @@
-[
-  {"CAPABILITY":"QA_REPRODUCTION","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"philaconvalley/website#117","COMMAND":"frozen pre_check in worker job","EXPECTED_ACCEPTANCE":"legacy ratio reproduced before bounded fix","OBSERVED_RESULT":"LOCAL_CONTRACT_PASS; REAL_DOCKER_REQUIRED_IN_SOAK","ARTIFACT_HASH":"cacaf204ba0d0e966e28f299c6c825b10dd95a44041348c9cd102e78ffe55ba5","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"public/frozen snapshot sources only"},
-  {"CAPABILITY":"PLAYWRIGHT_E2E","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"philaconvalley/website#117 focused contrast spec","COMMAND":"worker-owned Playwright shadow script in network-none container","EXPECTED_ACCEPTANCE":"focused e2e passes after fix","OBSERVED_RESULT":"REAL_DOCKER_BROWSER_REQUIRED_IN_SOAK","ARTIFACT_HASH":"cacaf204ba0d0e966e28f299c6c825b10dd95a44041348c9cd102e78ffe55ba5","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"approved loopback/frozen origins"},
-  {"CAPABILITY":"BROWSER_WORKFLOW_TESTING","ENTRYPOINT":"controlledBrowser via worker runtime","FIXTURE_OR_REAL_TASK":"loopback click/expect/download plus blocked cross-origin","COMMAND":"test/test-atm-worker-browser.js","EXPECTED_ACCEPTANCE":"workflow succeeds; cross-origin blocked; download confined","OBSERVED_RESULT":"POLICY_LOCAL_PASS; REAL_BROWSER_REQUIRED_IN_SOAK","ARTIFACT_HASH":"389c6fd2497b05349f46088c3bc863a82caf35b59fe01f534b8bda59c95fcb19","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"uploads fail closed in R1"},
-  {"CAPABILITY":"REGRESSION_TESTING","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"bounded before/after fixture and website#117","COMMAND":"pre_checks + post_checks","EXPECTED_ACCEPTANCE":"before condition reproduced and after checks pass","OBSERVED_RESULT":"LOCAL_FIXTURE_PASS; REAL_SHADOW_REQUIRED_IN_SOAK","ARTIFACT_HASH":"b4c53f7946d3b26ac5e38eeb22c9f34f05a9fb0b7adcabce6afcd1e9d697f7b8","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"deterministic commands only"},
-  {"CAPABILITY":"CI_TRIAGE","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"frozen CI log fixture","COMMAND":"CI_TRIAGE adapter","EXPECTED_ACCEPTANCE":"failure lines classified into sanitized artifact","OBSERVED_RESULT":"LOCAL_PASS","ARTIFACT_HASH":"d165e818016d1e6a9d97cab63e36a6bd1674b842e34b4f6a62ec6df72669b1bc","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"evidence classification, not authoritative external acceptance"},
-  {"CAPABILITY":"DETERMINISTIC_REPLAY","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"frozen replay fixture using DeterministicReplayEngine","COMMAND":"replay adapter","EXPECTED_ACCEPTANCE":"same frozen seed/input/time emits deterministic report","OBSERVED_RESULT":"LOCAL_PASS","ARTIFACT_HASH":"ce41c567ad5ff66a5bb6c49d2d88d7865d777f62ac645d79c0839fe04ce2dcb8","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"worker evidence only"},
-  {"CAPABILITY":"EVIDENCE_GENERATION","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"sanitized bounded artifact store plus result hashes","COMMAND":"ArtifactStore + result contract","EXPECTED_ACCEPTANCE":"secret scan, size bounds, SHA-256 refs","OBSERVED_RESULT":"LOCAL_PASS","ARTIFACT_HASH":"915bc30c35e52599f798b942e2a5346ece006cfb57f0c046ea836274edaab3f5","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"100 MiB aggregate / 25 MiB file defaults"},
-  {"CAPABILITY":"FIX_VERIFICATION","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"bounded fixture + website#117","COMMAND":"post_checks after scoped patch","EXPECTED_ACCEPTANCE":"after checks pass and diff remains allowed-only","OBSERVED_RESULT":"LOCAL_FIXTURE_PASS; REAL_SHADOW_REQUIRED_IN_SOAK","ARTIFACT_HASH":"b4c53f7946d3b26ac5e38eeb22c9f34f05a9fb0b7adcabce6afcd1e9d697f7b8","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"no external acceptance authority"},
-  {"CAPABILITY":"SMALL_BOUNDED_CODE_FIX","ENTRYPOINT":"node atm-worker/cli.js run","FIXTURE_OR_REAL_TASK":"exact_replace recipe; website#117 frozen recipe","COMMAND":"applyRecipe + realpath/diff enforcement","EXPECTED_ACCEPTANCE":"one allowed path mutates; local commit only","OBSERVED_RESULT":"LOCAL_PASS; REAL_SHADOW_REQUIRED_IN_SOAK","ARTIFACT_HASH":"b4c53f7946d3b26ac5e38eeb22c9f34f05a9fb0b7adcabce6afcd1e9d697f7b8","CI_REF":"BOQA Real Docker Soak V1 exact-head","LIMITATIONS":"MODEL_AUTHORITY=0; exact deterministic recipe only"}
-]
+{
+  "capabilities": [
+    {
+      "artifact_hash": "cacaf204ba0d0e966e28f299c6c825b10dd95a44041348c9cd102e78ffe55ba5",
+      "capability": "QA_REPRODUCTION",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-real-world.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "philaconvalley/website#117",
+      "limitations": [],
+      "observed_result": "LOCAL_PASS; real Docker/browser portions require exact-head soak"
+    },
+    {
+      "artifact_hash": "cacaf204ba0d0e966e28f299c6c825b10dd95a44041348c9cd102e78ffe55ba5",
+      "capability": "PLAYWRIGHT_E2E",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-real-world.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "philaconvalley/website#117",
+      "limitations": [],
+      "observed_result": "LOCAL_PASS; real Docker/browser portions require exact-head soak"
+    },
+    {
+      "artifact_hash": "389c6fd2497b05349f46088c3bc863a82caf35b59fe01f534b8bda59c95fcb19",
+      "capability": "BROWSER_WORKFLOW_TESTING",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-browser.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "test/test-atm-worker-browser.js",
+      "limitations": [],
+      "observed_result": "LOCAL_PASS; real Docker/browser portions require exact-head soak"
+    },
+    {
+      "artifact_hash": "cacaf204ba0d0e966e28f299c6c825b10dd95a44041348c9cd102e78ffe55ba5",
+      "capability": "REGRESSION_TESTING",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-real-world.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "philaconvalley/website#117",
+      "limitations": [],
+      "observed_result": "LOCAL_PASS; real Docker/browser portions require exact-head soak"
+    },
+    {
+      "artifact_hash": "d165e818016d1e6a9d97cab63e36a6bd1674b842e34b4f6a62ec6df72669b1bc",
+      "capability": "CI_TRIAGE",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-capabilities.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "test/test-atm-worker-capabilities.js",
+      "limitations": [],
+      "observed_result": "PASS_LOCAL"
+    },
+    {
+      "artifact_hash": "ce41c567ad5ff66a5bb6c49d2d88d7865d777f62ac645d79c0839fe04ce2dcb8",
+      "capability": "DETERMINISTIC_REPLAY",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-replay.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "test/test-atm-worker-replay.js",
+      "limitations": [],
+      "observed_result": "PASS_LOCAL"
+    },
+    {
+      "artifact_hash": "75bcb56c38fb00630f32e3cc68d9959e17d01455e465d9343d36cc540c2c334c",
+      "capability": "EVIDENCE_GENERATION",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-artifacts.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "test/test-atm-worker-artifacts.js",
+      "limitations": [],
+      "observed_result": "PASS_LOCAL"
+    },
+    {
+      "artifact_hash": "b4c53f7946d3b26ac5e38eeb22c9f34f05a9fb0b7adcabce6afcd1e9d697f7b8",
+      "capability": "FIX_VERIFICATION",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-fix-and-checker.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "philaconvalley/website#117",
+      "limitations": [],
+      "observed_result": "LOCAL_PASS; real Docker/browser portions require exact-head soak"
+    },
+    {
+      "artifact_hash": "b4c53f7946d3b26ac5e38eeb22c9f34f05a9fb0b7adcabce6afcd1e9d697f7b8",
+      "capability": "SMALL_BOUNDED_CODE_FIX",
+      "ci_ref": "BOQA Real Docker Soak V1 exact branch/head post-publication",
+      "command": "node test/test-atm-worker-fix-and-checker.js",
+      "entrypoint": "node atm-worker/cli.js run --job <job.json> --run-root <dir>",
+      "expected_acceptance": "PASS",
+      "fixture_or_real_task": "philaconvalley/website#117",
+      "limitations": "MODEL_AUTHORITY=0; no open-ended autonomous coding",
+      "observed_result": "LOCAL_PASS; real Docker/browser portions require exact-head soak"
+    }
+  ],
+  "claim_policy": "PROVEN_ONLY_AFTER_EXACT_HEAD_SOAK_FOR_DOCKER_BROWSER_CAPABILITIES",
+  "worker_id": "boqa"
+}
