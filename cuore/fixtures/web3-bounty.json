@@ -1,0 +1,48 @@
+{
+  "source": "immunefi-fixture",
+  "bounties": [
+    {
+      "bounty_id": "web3-bounty-001",
+      "name": "Synthetic web3 bounty",
+      "link": "https://fixture.invalid/bounties/web3-001",
+      "status": "open",
+      "reward_floor": 250,
+      "max_reward": 1000,
+      "currency": "USDC",
+      "deadline": "2026-10-10T00:00:00.000Z",
+      "scope": {
+        "admission": "IN_SCOPE",
+        "scope_hash": "web3-scope-1",
+        "test_class": "metadata_only",
+        "required_capabilities": ["evidence-verification"]
+      },
+      "policy_url": "https://fixture.invalid/policies/web3-program",
+      "regions": ["GLOBAL"],
+      "payout_rail": "synthetic",
+      "kyc": "none",
+      "automation": "allowed",
+      "freshness": "fresh",
+      "policy": {
+        "platform": "immunefi-fixture",
+        "program_id": "web3-program",
+        "policy_url": "https://fixture.invalid/policies/web3-program",
+        "policy_hash": "web3-policy-hash-1",
+        "scope_hash": "web3-scope-1",
+        "safe_harbor": true,
+        "automation_allowed": true,
+        "automation_rate_limit": 12,
+        "allowed_test_classes": ["metadata_only"],
+        "prohibited_test_classes": ["state_change"],
+        "account_rules": { "account_required": false },
+        "data_handling_rules": { "private_data": "deny" },
+        "disclosure_rules": { "human_review": true },
+        "submission_channel": "fixture-only",
+        "ai_submission_rules": { "allowed": false },
+        "kyc_requirement": "none",
+        "payout_terms": { "verified": true, "rail": "synthetic" },
+        "verified_at": "2026-09-25T00:00:00.000Z",
+        "expires_at": "2026-10-25T00:00:00.000Z"
+      }
+    }
+  ]
+}

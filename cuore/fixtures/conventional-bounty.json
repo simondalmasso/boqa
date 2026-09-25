@@ -1,0 +1,48 @@
+{
+  "source": "hackerone-fixture",
+  "programs": [
+    {
+      "program_id": "conventional-program-001",
+      "name": "Synthetic conventional bounty",
+      "page": "https://fixture.invalid/programs/conventional-001",
+      "status": "open",
+      "bounty_min": 150,
+      "bounty_max": 500,
+      "currency": "USD",
+      "deadline": "2026-10-05T00:00:00.000Z",
+      "scope": {
+        "admission": "IN_SCOPE",
+        "scope_hash": "conventional-scope-1",
+        "test_class": "metadata_only",
+        "required_capabilities": ["evidence-verification"]
+      },
+      "policy_url": "https://fixture.invalid/policies/conventional-program",
+      "regions": ["GLOBAL"],
+      "payout": "synthetic",
+      "kyc": "none",
+      "automation": "allowed",
+      "freshness": "fresh",
+      "policy": {
+        "platform": "hackerone-fixture",
+        "program_id": "conventional-program",
+        "policy_url": "https://fixture.invalid/policies/conventional-program",
+        "policy_hash": "conventional-policy-hash-1",
+        "scope_hash": "conventional-scope-1",
+        "safe_harbor": true,
+        "automation_allowed": true,
+        "automation_rate_limit": 20,
+        "allowed_test_classes": ["metadata_only"],
+        "prohibited_test_classes": ["state_change"],
+        "account_rules": { "account_required": false },
+        "data_handling_rules": { "private_data": "deny" },
+        "disclosure_rules": { "human_review": true },
+        "submission_channel": "fixture-only",
+        "ai_submission_rules": { "allowed": false },
+        "kyc_requirement": "none",
+        "payout_terms": { "verified": true, "rail": "synthetic" },
+        "verified_at": "2026-09-25T00:00:00.000Z",
+        "expires_at": "2026-10-25T00:00:00.000Z"
+      }
+    }
+  ]
+}

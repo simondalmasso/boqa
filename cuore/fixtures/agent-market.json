@@ -1,0 +1,89 @@
+{
+  "source": "moltjobs-fixture",
+  "tasks": [
+    {
+      "task_id": "agent-task-001",
+      "title": "Synthetic CI evidence task",
+      "url": "https://fixture.invalid/tasks/agent-task-001",
+      "kind": "paid_task",
+      "status": "open",
+      "reward": { "amount": 100, "currency": "USD" },
+      "deadline": "2026-10-01T00:00:00.000Z",
+      "scope_summary": {
+        "admission": "IN_SCOPE",
+        "scope_hash": "agent-scope-1",
+        "test_class": "metadata_only",
+        "required_capabilities": ["evidence-verification"]
+      },
+      "policy_url": "https://fixture.invalid/policies/agent-program",
+      "eligibility_regions": ["GLOBAL"],
+      "payout_rail": "synthetic",
+      "kyc_requirement": "none",
+      "automation_policy": "allowed",
+      "freshness": "fresh",
+      "policy": {
+        "platform": "moltjobs-fixture",
+        "program_id": "agent-program",
+        "policy_url": "https://fixture.invalid/policies/agent-program",
+        "policy_hash": "agent-policy-hash-1",
+        "scope_hash": "agent-scope-1",
+        "safe_harbor": true,
+        "automation_allowed": true,
+        "automation_rate_limit": 30,
+        "allowed_test_classes": ["metadata_only"],
+        "prohibited_test_classes": ["state_change"],
+        "account_rules": { "account_required": false },
+        "data_handling_rules": { "private_data": "deny" },
+        "disclosure_rules": { "human_review": true },
+        "submission_channel": "fixture-only",
+        "ai_submission_rules": { "allowed": false },
+        "kyc_requirement": "none",
+        "payout_terms": { "verified": true, "rail": "synthetic" },
+        "verified_at": "2026-09-25T00:00:00.000Z",
+        "expires_at": "2026-10-25T00:00:00.000Z"
+      }
+    },
+    {
+      "task_id": "agent-task-001",
+      "title": "Synthetic CI evidence task",
+      "url": "https://fixture.invalid/tasks/agent-task-001",
+      "kind": "paid_task",
+      "status": "open",
+      "reward": { "amount": 100, "currency": "USD" },
+      "deadline": "2026-10-01T00:00:00.000Z",
+      "scope_summary": {
+        "admission": "IN_SCOPE",
+        "scope_hash": "agent-scope-1",
+        "test_class": "metadata_only",
+        "required_capabilities": ["evidence-verification"]
+      },
+      "policy_url": "https://fixture.invalid/policies/agent-program",
+      "eligibility_regions": ["GLOBAL"],
+      "payout_rail": "synthetic",
+      "kyc_requirement": "none",
+      "automation_policy": "allowed",
+      "freshness": "fresh",
+      "policy": {
+        "platform": "moltjobs-fixture",
+        "program_id": "agent-program",
+        "policy_url": "https://fixture.invalid/policies/agent-program",
+        "policy_hash": "agent-policy-hash-1",
+        "scope_hash": "agent-scope-1",
+        "safe_harbor": true,
+        "automation_allowed": true,
+        "automation_rate_limit": 30,
+        "allowed_test_classes": ["metadata_only"],
+        "prohibited_test_classes": ["state_change"],
+        "account_rules": { "account_required": false },
+        "data_handling_rules": { "private_data": "deny" },
+        "disclosure_rules": { "human_review": true },
+        "submission_channel": "fixture-only",
+        "ai_submission_rules": { "allowed": false },
+        "kyc_requirement": "none",
+        "payout_terms": { "verified": true, "rail": "synthetic" },
+        "verified_at": "2026-09-25T00:00:00.000Z",
+        "expires_at": "2026-10-25T00:00:00.000Z"
+      }
+    }
+  ]
+}
