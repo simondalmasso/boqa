@@ -66,3 +66,32 @@ Responsive CSS contract exists for desktop, <=900px and <=600px, but source insp
 No implementation blocker found in static inspection.
 Release/integration is NOT authorized by this lane.
 The only remaining evidence blocker is browser-rendered capture and interaction QA.
+
+## Rendered QA follow-up — completed
+
+The earlier browser-capture blocker was subsequently resolved with an equivalent local Playwright/Chromium 144 harness reconstructed from the current GitHub branch source. Direct GitHub/file navigation remained blocked by environment policy, so this does not claim a byte-identical direct branch navigation session.
+
+Rendering exposed three real mobile layout defects; they were corrected only in `prototype/turbo-ui/styles.css` by commit `e1037ef4ff5876a6dda086016330603e985e27de`.
+
+Final rendered results:
+- 1440x900: PASS
+- 1366x768: PASS
+- 390x844: PASS
+- 360x800: PASS
+- 360x800 Radar/Gates/Evidence/Help: PASS, no horizontal document overflow
+- deterministic browser checks: 26/26 PASS
+- keyboard F1-F10/Escape contract: PASS
+- Radar selection and Gate preview interactions: PASS
+- disabled NOT CONNECTED submit: PASS
+- reduced-motion emulation: PASS
+- skip-link focus/activation: PASS
+- console/page errors in required viewport runs: none
+- non-data network requests in required viewport runs: none
+
+Full method, caveats and artifact hashes: `evidence/ui/rendered-qa.md`.
+
+`PRODUCT_DESIGN_QA=PASS_RENDERED_IMPLEMENTATION_VS_BRIEF`  
+`RUNTIME_ACTION_EFFICIENCY_REVIEW=PASS_RENDERED`  
+`REQUIRED_SCREENSHOT_MATRIX=PASS`  
+`DIRECT_REPO_BROWSER_NAVIGATION=BLOCKED_ENVIRONMENT_POLICY_NON_BLOCKING`  
+`ARQ3_SCOPE_BLOCKERS=NONE`
