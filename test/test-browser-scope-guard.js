@@ -1,0 +1,11 @@
+'use strict';
+const assert=require('assert');
+const {PlaywrightRunner,validateTargetScope}=require('../agent/playwright-runner');
+assert.equal(validateTargetScope('http://127.0.0.1:43117/path',['http://127.0.0.1:43117']).origin,'http://127.0.0.1:43117');
+assert.throws(()=>validateTargetScope('',['http://127.0.0.1:43117']),e=>e.code==='BROWSER_TARGET_REQUIRED');
+assert.throws(()=>validateTargetScope('https://example.com',[]),e=>e.code==='BROWSER_SCOPE_REQUIRED');
+assert.throws(()=>validateTargetScope('https://example.com',['https://other.example']),e=>e.code==='BROWSER_TARGET_OUT_OF_SCOPE');
+assert.throws(()=>new PlaywrightRunner({}, {target:'http://127.0.0.1:43117',allowedOrigins:['http://127.0.0.1:43117'],cdpEndpoint:'http://127.0.0.1:9222'}),e=>e.code==='CDP_SESSION_INHERITANCE_DENIED');
+const runner=new PlaywrightRunner({}, {target:'http://127.0.0.1:43117',allowedOrigins:['http://127.0.0.1:43117']});
+assert.equal(runner.options.target,'http://127.0.0.1:43117/');
+console.log('browser scope guard: PASS');

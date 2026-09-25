@@ -1,0 +1,54 @@
+{
+  "schema": "boqa.restore001.lean-kernel-summary.v1",
+  "order_id": "BOQA-RESTORE-001-RECONCILE-PRUNE-LEAN-KERNEL-V1",
+  "measurement_base": "PR40_PLUS_V4_PLUS_BOQA006_SOURCE",
+  "base_pr40_head": "34626bb2ee3f770babaf9ec2a7997f04872733cc",
+  "files_before": 221,
+  "files_after": 105,
+  "js_files_before": 184,
+  "js_files_after": 59,
+  "runtime_js_before": 151,
+  "runtime_js_after": 45,
+  "runtime_bytes_before": 2479403,
+  "runtime_bytes_after": 350111,
+  "root_runtime_modules_before": 87,
+  "root_runtime_modules_after": 8,
+  "package_scripts_before": 35,
+  "package_scripts_after": 13,
+  "dependencies_before": 6,
+  "dependencies_after": 3,
+  "dead_superseded_duplicate_js_removed": 127,
+  "duplicate_clusters_collapsed": 3,
+  "historical_route_modules_removed": 10,
+  "package_scripts_removed": 22,
+  "external_default_targets": 0,
+  "canon_reconciled": true,
+  "network_scope_gates": [
+    "browser_target_and_allowed_origins_required",
+    "cdp_session_inheritance_denied",
+    "defensive_asset_allowlist_fail_closed",
+    "public_edge_two_read_paths_only",
+    "v4_loopback_destination_guard"
+  ],
+  "final_local_acceptance": {
+    "supported_js": "13_PASS_0_FAIL_0_ERROR_0_SKIP_TWICE",
+    "v4": "20_PASS_0_FAIL_TWICE",
+    "boqa006": "4_PASS_0_FAIL_TWICE",
+    "lab_validate": "VALID_TWICE",
+    "browser_smoke_local": "INFRA_UNAVAILABLE_MISSING_LIBGLIB_NO_SUDO",
+    "remote_exact_head_ci_required": true
+  },
+  "evidence_hashes": {
+    "reachability_preprune_sha256": "70a6b6e3ea4429637b5d726fb121a61f2abedce9e5d6455cebcb315648058d52",
+    "reachability_postprune_sha256": "e2b01bb035949469b214cdaccf034156a6468ead40b97c5a41d7947c751d3e0f",
+    "canon_reconciliation_initial_sha256": "a81ca926083e06263490ff21b5417e2af5a82d5108a9fd345aab0e082b8d0ce6"
+  },
+  "hard_no": {
+    "merge": false,
+    "deploy": false,
+    "production_traffic_change": false,
+    "laya": false,
+    "ui_redesign": false,
+    "bounty_features": false
+  }
+}

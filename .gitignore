@@ -39,3 +39,7 @@ wrangler.toml.local
 # Playwright
 /playwright-report/
 /test-results/
+
+# Python local caches
+__pycache__/
+*.pyc

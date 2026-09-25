@@ -283,7 +283,7 @@
       get: origCookieDesc.get,
       set: function boqaCookieSet(value) {
         const cookieName = value.split('=')[0]?.trim();
-        const authNames = ['ripio_access', 'sessionid', 'csrftoken', 'access_token', 'refresh_token'];
+        const authNames = ['sessionid', 'csrftoken', 'access_token', 'refresh_token'];
 
         if (authNames.includes(cookieName)) {
           emit('cookie_write', {

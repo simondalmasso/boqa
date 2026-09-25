@@ -1,0 +1,1 @@
+{"schema":"boqa.controlled-lab.v1","route":"original","owner_control":{"status":200,"semantic":{"marker":"BOQA_TENANT_A_7F39","invoice_id":"481"}},"outsider_probe":{"status":403,"semantic":{"error":"forbidden"}}}

@@ -1,0 +1,161 @@
+{
+  "base_v4_local_commit": "1c2bf4aa416db046943277721d37ea967aae710a",
+  "case_A": "REPRODUCED",
+  "case_A_regression_fixed_exit": 0,
+  "case_A_regression_vulnerable_exit": 1,
+  "case_B": "NOT_REPRODUCED",
+  "case_B_regression_generated": false,
+  "case_C": "AMBIGUOUS",
+  "case_C_regression_generated": false,
+  "files": [
+    {
+      "bytes": 1777,
+      "file": "boqa006-three-cases.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "92d2620fa5aad66d3e0d4187799663fd415d7f373c6a57382ced0934021c456f"
+    },
+    {
+      "bytes": 286,
+      "file": "boqa006-unit.stderr",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "9d836360edbb1beea6229fede44791225aeaa87b6f378c8e1525588e94b3a014"
+    },
+    {
+      "bytes": 0,
+      "file": "boqa006-unit.stdout",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 310,
+      "file": "evidence/A/candidate.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "c2210e61e3e53a1000a82be3ac13c6ccad1234b9bf96601d352ebd7ba8dd8020"
+    },
+    {
+      "bytes": 598,
+      "file": "evidence/A/reproduction.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "ff91a363ae36dad2ee3894e5ee75a14cdb1a4ffee211686f99731dc0fb3c31f2"
+    },
+    {
+      "bytes": 492,
+      "file": "evidence/A/result.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "f326ad8128f588aeba203c51403c88c6d86ff3b42ee629d2d00ade8d4ec81ce4"
+    },
+    {
+      "bytes": 330,
+      "file": "evidence/A/standalone_regression.py",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "5113f8282d0e17f47e17e9bbdc5b2a7bc4f68dc70f1ace5afd08902bb4b61537"
+    },
+    {
+      "bytes": 316,
+      "file": "evidence/B/candidate.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "45ecb6a9246fc14e924bf965d63535b218bbc3edee40a7ecaeda7fecb7ca0910"
+    },
+    {
+      "bytes": 567,
+      "file": "evidence/B/reproduction.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "0131092eceaba7f9aa798a65c92d10c184b192f737e0e06c137584fc041e7cb2"
+    },
+    {
+      "bytes": 449,
+      "file": "evidence/B/result.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "22a0c344dd1bd5298bcc4a5343cf3376a2de7bca5d4b99cac9ff4dde9794eb42"
+    },
+    {
+      "bytes": 314,
+      "file": "evidence/C/candidate.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "915dd88240643d5e5e82bac4ec45c6e9a3e05f3bae71ffb88e87c86547ec4e72"
+    },
+    {
+      "bytes": 596,
+      "file": "evidence/C/reproduction.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "300544448b1a5631b97ede44146cd52366471f7e6ba3df1d12dc396f0f57c06e"
+    },
+    {
+      "bytes": 452,
+      "file": "evidence/C/result.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "51cd38c9cd985fdfaf334b0f201fee1301466aa34d673e8cd4580e79ee30bc09"
+    },
+    {
+      "bytes": 1999,
+      "file": "evidence/manifest.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "d3e8d9a1b32063267f8a86a8bb584fcf62690c56e408cabedffb3d8f2272e59f"
+    },
+    {
+      "bytes": 236,
+      "file": "lab/case_A.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "d1ed7ddf83ce62c212f00fb3149cf9868cf4744c2d956b3673ac940ccbdad10f"
+    },
+    {
+      "bytes": 207,
+      "file": "lab/case_A_fixed.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "5cf397542ee36d50923b0374c60b71b5627586207b7743472e9fecc0e6c7279a"
+    },
+    {
+      "bytes": 213,
+      "file": "lab/case_B.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "197b1eeaf63939233f0103c9415057f30b0411a6917160ad6b005567e8cd4381"
+    },
+    {
+      "bytes": 242,
+      "file": "lab/case_C.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "ac3ebb97e29efaeee90338418dde5703869622f1ed9831386c9442fe435c057a"
+    },
+    {
+      "bytes": 4079,
+      "file": "pipeline.py",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "bbccd84ab783e5fabba79fabc0de35cab44fb9642a337514ae148d04cac207b8"
+    },
+    {
+      "bytes": 1388,
+      "file": "run_three_cases.py",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "9800a1b18a4267fbd69c577193af697e7020242a94e7ef4034e37733e25369a0"
+    },
+    {
+      "bytes": 191,
+      "file": "seeds/case_A.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "940da3d7420af210a26a25a2c70e486dfa15615e9aa447a449e70138717749c7"
+    },
+    {
+      "bytes": 197,
+      "file": "seeds/case_B.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "5ae48e8d91fb00d0abbd526faa6c26845e4afb2ed8b1df11724ce6032ba72134"
+    },
+    {
+      "bytes": 196,
+      "file": "seeds/case_C.json",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "6c6179245103f44c4623adef3bd72083b7bb25b52ac82fdbc9cf0ef78f238b4f"
+    },
+    {
+      "bytes": 1100,
+      "file": "tests/test_pipeline.py",
+      "provenance": "boqa006_offline_controlled_vertical_slice",
+      "sha256": "44b83549bcd2b954d5f68a9fa7d96ac5c0f8835bd58d55a68812d69998029b6d"
+    }
+  ],
+  "generated_at_utc": "2026-08-24T20:39:32.190697+00:00",
+  "github_calls": 0,
+  "network_mutations": 0,
+  "production_mutation": false,
+  "schema": "boqa006.offline.bundle.v1"
+}

@@ -23,8 +23,8 @@ jobs:
     env:
       CI: 'true'
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-      BOUNDARY_OWNER_TOKEN: synthetic-owner-token-for-boqa-005
-      BOUNDARY_OUTSIDER_TOKEN: synthetic-outsider-token-for-boqa-005
+      BOQA_ACTOR_A_TOKEN: synthetic-actor-a-token-boqa-005
+      BOQA_ACTOR_B_TOKEN: synthetic-actor-b-token-boqa-005
       BOUNDARY_PORT: '43117'
     steps:
       - name: Checkout exact PR head
@@ -92,6 +92,6 @@ jobs:
           set -Eeuo pipefail
           out="$RUNNER_TEMP/boundary-proof"
           test "$(find "$out" -maxdepth 1 -type f \( -name 'boundary-contract.yaml' -o -name 'boundary-regression.spec.ts' -o -name 'evidence.json' \) | wc -l)" -eq 3
-          node -e "const e=require(process.argv[1]); if(e.metrics.true_positives!==3||e.metrics.false_positives!==0||e.metrics.false_negatives!==0||e.variant_discovery.generated_count<1) process.exit(1)" "$out/evidence.json"
+          node -e "const e=require(process.argv[1]); if(e.metrics.true_positives!==3||e.metrics.false_positives!==0||e.metrics.false_negatives!==0||e.variant_discovery.source_route_id!=='original'||e.variant_discovery.input_variant_count!==0||e.variant_discovery.derived_count<1||e.input.variant_count!==0||e.input.load_closed_yaml_input!==true) process.exit(1)" "$out/evidence.json"
           test "$(cat "$out/vulnerable-test.exit")" -ne 0
           test "$(cat "$out/fixed-test.exit")" -eq 0

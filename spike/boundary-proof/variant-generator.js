@@ -1,68 +1,92 @@
 'use strict';
 
-function materialize(template, finding) {
-  return template.replace(`:${finding.resource_parameter}`, encodeURIComponent(finding.resource_id));
-}
+const { materializePath } = require('./lab/fixtures');
+const { normalizeFindingPath } = require('./route-graph');
 
-function relatedReasons(graph, originalId, candidateId) {
+const CLOSED_TRANSFORMATIONS = Object.freeze([
+  Object.freeze({ id: 'original', kind: 'identity', derive: (source) => source }),
+  Object.freeze({ id: 'v2', kind: 'version_prefix_v2', derive: (source) => source.replace('/api/', '/api/v2/') }),
+  Object.freeze({ id: 'export', kind: 'export_suffix', derive: (source) => `${source}/export` }),
+  Object.freeze({
+    id: 'nested',
+    kind: 'account_scope_nesting',
+    derive: (source) => source.replace('/api/invoices/:id', '/api/accounts/:accountId/invoices/:id'),
+  }),
+  Object.freeze({
+    id: 'query',
+    kind: 'path_parameter_to_query_parameter',
+    derive: (source) => source.replace('/api/invoices/:id', '/api/invoices?id=:id'),
+  }),
+]);
+
+function relationReasons(graph, sourceId, candidateId) {
   const edge = graph.edges.find((item) => (
-    (item.from === originalId && item.to === candidateId)
-    || (item.from === candidateId && item.to === originalId)
+    (item.from === sourceId && item.to === candidateId)
+    || (item.from === candidateId && item.to === sourceId)
   ));
-  return edge ? edge.reasons : [];
+  return edge ? [...edge.reasons] : [];
 }
 
-function generateRelatedVariants(finding, graph) {
-  const original = graph.nodes.find((node) => (
-    node.method === finding.method && node.template === finding.route_template
-  ));
-  if (!original) throw new Error('Known finding route is absent from route graph');
-
-  const variants = graph.nodes
-    .filter((node) => node.id !== original.id)
-    .filter((node) => node.method === finding.method)
-    .filter((node) => node.authority_boundary === finding.authority_boundary)
-    .filter((node) => node.resource_type === finding.resource_type)
-    .filter((node) => node.resource_parameter === finding.resource_parameter)
-    .map((node) => ({
-      id: `variant-${node.id}`,
-      source_finding_id: finding.id,
-      route_id: node.id,
-      method: node.method,
-      route_template: node.template,
-      concrete_path: materialize(node.template, finding),
-      authority_boundary: node.authority_boundary,
-      resource_type: node.resource_type,
-      operation: node.operation,
-      relation_reasons: relatedReasons(graph, original.id, node.id),
-    }))
-    .filter((variant) => variant.relation_reasons.includes('shared_authority_boundary'))
-    .sort((a, b) => a.route_id.localeCompare(b.route_id));
-
-  return {
-    original_route_id: original.id,
-    variants,
-  };
+function classifyClosedTransformation(sourceTemplate, candidateTemplate) {
+  return CLOSED_TRANSFORMATIONS.find((transform) => transform.derive(sourceTemplate) === candidateTemplate) || null;
 }
 
-function selectPublicControl(finding, graph) {
-  const node = graph.nodes
-    .filter((item) => item.method === finding.method)
-    .filter((item) => item.resource_type === finding.resource_type)
-    .filter((item) => item.visibility === 'public')
-    .sort((a, b) => a.id.localeCompare(b.id))[0];
-  if (!node) throw new Error('Public negative control route is absent from route graph');
+function candidateFromNode(node, actors, source, transform, graph) {
   return {
-    id: `control-${node.id}`,
+    id: transform.kind === 'identity' ? `source-${node.id}` : `variant-${node.id}`,
     route_id: node.id,
+    source: transform.kind === 'identity' ? 'known_finding' : 'derived_related_variant',
     method: node.method,
     route_template: node.template,
-    concrete_path: materialize(node.template, finding),
+    operation: node.operation,
     authority_boundary: node.authority_boundary,
     resource_type: node.resource_type,
-    operation: node.operation,
-    control: 'public_non_private_resource',
+    transformation: transform.kind,
+    path_for_actor_a_resource: materializePath(node.template, actors.actor_a),
+    path_for_actor_b_resource: materializePath(node.template, actors.actor_b),
+    relation_reasons: transform.kind === 'identity'
+      ? ['normalized_source_operation']
+      : ['closed_transformation', ...relationReasons(graph, source.source_route_id, node.id)],
   };
 }
 
-module.exports = { generateRelatedVariants, selectPublicControl, materialize };
+function generateRelatedVariants(input, graph, actors) {
+  const source = normalizeFindingPath(input, graph);
+  if (source.source_route_id !== 'original' || source.source_template !== '/api/invoices/:id') {
+    throw new Error('The only allowed normalized source operation is original=/api/invoices/:id');
+  }
+  const sourceNode = graph.nodes.find((node) => node.id === source.source_route_id);
+  const compatible = graph.nodes.filter((node) => (
+    node.method === sourceNode.method
+    && node.authority_boundary === sourceNode.authority_boundary
+    && node.resource_type === sourceNode.resource_type
+  ));
+
+  const candidatesByTransform = new Map();
+  for (const node of compatible) {
+    const transform = classifyClosedTransformation(source.source_template, node.template);
+    if (!transform) continue;
+    if (node.id !== transform.id) throw new Error(`Route catalog id/transform mismatch: ${node.id}/${transform.id}`);
+    candidatesByTransform.set(transform.id, candidateFromNode(node, actors, source, transform, graph));
+  }
+  const candidates = CLOSED_TRANSFORMATIONS.map((transform) => candidatesByTransform.get(transform.id));
+  if (candidates.some((candidate) => !candidate)) throw new Error('Route catalog is missing a closed derived operation');
+
+  return {
+    source_route_id: source.source_route_id,
+    source_method: source.source_method,
+    source_template: source.source_template,
+    normalization: source.normalization,
+    input_variant_count: 0,
+    transformations: CLOSED_TRANSFORMATIONS.map(({ id, kind }) => ({ id, kind })),
+    candidates,
+    variants: candidates.filter((candidate) => candidate.source === 'derived_related_variant'),
+  };
+}
+
+module.exports = {
+  CLOSED_TRANSFORMATIONS,
+  relationReasons,
+  classifyClosedTransformation,
+  generateRelatedVariants,
+};

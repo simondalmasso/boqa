@@ -1,244 +1,781 @@
 {
-  "schema": "boqa.boundary.evidence.v1",
+  "schema": "boqa.boundary.evidence.v3",
   "mission_id": "BOQA-005",
   "lab_mode": "vulnerable",
-  "source_finding_id": "finding-project-object-owner-bypass",
-  "deterministic_identity": {
-    "route_graph_sha256": "244b20b7826b4b06e5a6b039bfa966a9dc4ba434c79e38a8afbea97cba38cec5",
-    "contract_sha256": "18b309099e20b62f083eae3363d431f931f243e3e8670b02f2c26dccf07fb5ae",
-    "generated_test_sha256": "b0df95eecfdf4e459f7a4eec2028305225a426dfc7f231e7f114c502dd16979d"
+  "input": {
+    "load_closed_yaml_input": true,
+    "input_sha256": "dcc760a26d80a1d8900d8b1f4ab2ab7b50d4981490e486da43d1f2599554f8c7",
+    "finding": {
+      "path": "/api/invoices/481"
+    },
+    "resource": {
+      "id": "481"
+    },
+    "expected_owner": "actor_a",
+    "prohibited_actor": "actor_b",
+    "private_marker": "BOQA_TENANT_A_7F39",
+    "variant_count": 0,
+    "route_catalog_embedded": false,
+    "ground_truth_embedded": false,
+    "token_env_names": [
+      "BOQA_ACTOR_A_TOKEN",
+      "BOQA_ACTOR_B_TOKEN"
+    ],
+    "binding": {
+      "expected_owner_id": "actor_a",
+      "expected_owner_resource_id": "481",
+      "prohibited_actor_id": "actor_b"
+    }
   },
+  "fixtures": {
+    "actor_a": {
+      "id": "actor_a",
+      "tenant_label": "Tenant A",
+      "user_label": "Usuario A",
+      "tenant_id": "tenant-a",
+      "user_id": "user-a",
+      "account_id": "7",
+      "invoice_id": "481",
+      "marker": "BOQA_TENANT_A_7F39",
+      "token_env": "BOQA_ACTOR_A_TOKEN"
+    },
+    "actor_b": {
+      "id": "actor_b",
+      "tenant_label": "Tenant B",
+      "user_label": "Usuario B",
+      "tenant_id": "tenant-b",
+      "user_id": "user-b",
+      "account_id": "9",
+      "invoice_id": "902",
+      "marker": "BOQA_TENANT_B_3C21",
+      "token_env": "BOQA_ACTOR_B_TOKEN"
+    }
+  },
+  "route_graph_sha256": "bcf8c8c7a77199a6d0c16d44d20e14189518f57242c0fa22426cfb410f82f216",
   "variant_discovery": {
-    "generated_count": 2,
-    "generated_route_ids": [
-      "project-audit",
-      "project-export"
+    "source_route_id": "original",
+    "source_method": "GET",
+    "source_template": "/api/invoices/:id",
+    "normalization": "concrete_resource_id_to_path_parameter",
+    "input_variant_count": 0,
+    "closed_transformations": [
+      {
+        "id": "original",
+        "kind": "identity"
+      },
+      {
+        "id": "v2",
+        "kind": "version_prefix_v2"
+      },
+      {
+        "id": "export",
+        "kind": "export_suffix"
+      },
+      {
+        "id": "nested",
+        "kind": "account_scope_nesting"
+      },
+      {
+        "id": "query",
+        "kind": "path_parameter_to_query_parameter"
+      }
+    ],
+    "derived_count": 4,
+    "derived_route_ids": [
+      "v2",
+      "export",
+      "nested",
+      "query"
+    ],
+    "newly_confirmed_count": 3,
+    "newly_confirmed_route_ids": [
+      "v2",
+      "export",
+      "nested"
     ],
     "manual_variant_configuration": false
   },
-  "execution": {
-    "actor_model": [
-      "owner_control",
-      "outsider_control"
+  "independent_ground_truth": {
+    "source": "controlled_lab_only",
+    "matrix_embedded": false,
+    "route_count": 5,
+    "matrix_sha256": "95fe1313a7c5e34c057779a9fbb780c13be2a54cf21c943008ba6db4d1e6b461"
+  },
+  "oracle": {
+    "vocabulary": [
+      "CONTRADICTED",
+      "NOT_CONTRADICTED_IN_TESTED_SCOPE",
+      "UNPROVEN",
+      "INVALID_EXPERIMENT"
     ],
-    "external_targets": 0,
-    "receipts": [
+    "prohibited_signal_classes": [
+      "owner_marker",
+      "invoice_or_resource_id",
+      "tenant_id",
+      "sensitive_field",
+      "operational_capability",
+      "prohibited_metadata"
+    ],
+    "any_single_prohibited_signal_is_contradiction": true,
+    "ambiguous_response": "UNPROVEN",
+    "invalid_owner_control": "INVALID_EXPERIMENT",
+    "http_200_alone_is_not_contradiction": true,
+    "results": [
       {
-        "candidate": {
-          "id": "seed-project-read",
-          "route_id": "project-read",
-          "method": "GET",
-          "path": "/api/projects/project-alpha",
-          "source": "known_finding"
-        },
-        "owner": {
-          "actor": "owner_control",
-          "route_id": "project-read",
-          "method": "GET",
-          "path": "/api/projects/project-alpha",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "99989f2df6f3f62f6cdefedc7fc51d9980e68cbb8c74b1d95cdbce0fefde0320",
-          "semantic": {
-            "kind": "private_project_resource",
-            "marker": "project-private:project-alpha",
-            "owner_id": "owner-alpha",
-            "project_id": "project-alpha",
-            "operation": "read",
-            "reason": null
-          }
-        },
-        "outsider": {
-          "actor": "outsider_control",
-          "route_id": "project-read",
-          "method": "GET",
-          "path": "/api/projects/project-alpha",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "99989f2df6f3f62f6cdefedc7fc51d9980e68cbb8c74b1d95cdbce0fefde0320",
-          "semantic": {
-            "kind": "private_project_resource",
-            "marker": "project-private:project-alpha",
-            "owner_id": "owner-alpha",
-            "project_id": "project-alpha",
-            "operation": "read",
-            "reason": null
-          }
+        "route_id": "original",
+        "source": "known_finding",
+        "verdict": "NOT_CONTRADICTED_IN_TESTED_SCOPE",
+        "contradiction": false,
+        "basis": [
+          "both_cross_tenant_probes_definitively_denied"
+        ]
+      },
+      {
+        "route_id": "v2",
+        "source": "derived_related_variant",
+        "verdict": "CONTRADICTED",
+        "contradiction": true,
+        "basis": [
+          "cross_tenant_prohibited_signal_disclosed"
+        ],
+        "disclosures": {
+          "actor_a_received_actor_b_signals": [
+            "owner_marker",
+            "invoice_or_resource_id",
+            "tenant_id",
+            "sensitive_field",
+            "operational_capability",
+            "prohibited_metadata"
+          ],
+          "actor_b_received_actor_a_signals": [
+            "owner_marker",
+            "invoice_or_resource_id",
+            "tenant_id",
+            "sensitive_field",
+            "operational_capability",
+            "prohibited_metadata"
+          ]
         }
       },
       {
-        "candidate": {
-          "id": "variant-project-audit",
-          "route_id": "project-audit",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/audit",
-          "source": "inferred_related_variant"
-        },
-        "owner": {
-          "actor": "owner_control",
-          "route_id": "project-audit",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/audit",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "3dc54b3a44e07265eb820317b165a8eeaf27ba4f022c86e28c8f014b0795e8d8",
-          "semantic": {
-            "kind": "private_project_resource",
-            "marker": "project-private:project-alpha",
-            "owner_id": "owner-alpha",
-            "project_id": "project-alpha",
-            "operation": "audit",
-            "reason": null
-          }
-        },
-        "outsider": {
-          "actor": "outsider_control",
-          "route_id": "project-audit",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/audit",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "3dc54b3a44e07265eb820317b165a8eeaf27ba4f022c86e28c8f014b0795e8d8",
-          "semantic": {
-            "kind": "private_project_resource",
-            "marker": "project-private:project-alpha",
-            "owner_id": "owner-alpha",
-            "project_id": "project-alpha",
-            "operation": "audit",
-            "reason": null
-          }
+        "route_id": "export",
+        "source": "derived_related_variant",
+        "verdict": "CONTRADICTED",
+        "contradiction": true,
+        "basis": [
+          "cross_tenant_prohibited_signal_disclosed"
+        ],
+        "disclosures": {
+          "actor_a_received_actor_b_signals": [
+            "owner_marker",
+            "invoice_or_resource_id",
+            "tenant_id",
+            "sensitive_field",
+            "operational_capability",
+            "prohibited_metadata"
+          ],
+          "actor_b_received_actor_a_signals": [
+            "owner_marker",
+            "invoice_or_resource_id",
+            "tenant_id",
+            "sensitive_field",
+            "operational_capability",
+            "prohibited_metadata"
+          ]
         }
       },
       {
-        "candidate": {
-          "id": "variant-project-export",
-          "route_id": "project-export",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/export",
-          "source": "inferred_related_variant"
-        },
-        "owner": {
-          "actor": "owner_control",
-          "route_id": "project-export",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/export",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "dae9d1938de19d82c38971274c6e8bc52d03af79e6fa4e48ef29fa328b5669cd",
-          "semantic": {
-            "kind": "private_project_resource",
-            "marker": "project-private:project-alpha",
-            "owner_id": "owner-alpha",
-            "project_id": "project-alpha",
-            "operation": "export",
-            "reason": null
-          }
-        },
-        "outsider": {
-          "actor": "outsider_control",
-          "route_id": "project-export",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/export",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "dae9d1938de19d82c38971274c6e8bc52d03af79e6fa4e48ef29fa328b5669cd",
-          "semantic": {
-            "kind": "private_project_resource",
-            "marker": "project-private:project-alpha",
-            "owner_id": "owner-alpha",
-            "project_id": "project-alpha",
-            "operation": "export",
-            "reason": null
-          }
+        "route_id": "nested",
+        "source": "derived_related_variant",
+        "verdict": "CONTRADICTED",
+        "contradiction": true,
+        "basis": [
+          "cross_tenant_prohibited_signal_disclosed"
+        ],
+        "disclosures": {
+          "actor_a_received_actor_b_signals": [
+            "owner_marker",
+            "invoice_or_resource_id",
+            "tenant_id",
+            "sensitive_field",
+            "operational_capability",
+            "prohibited_metadata"
+          ],
+          "actor_b_received_actor_a_signals": [
+            "owner_marker",
+            "invoice_or_resource_id",
+            "tenant_id",
+            "sensitive_field",
+            "operational_capability",
+            "prohibited_metadata"
+          ]
         }
       },
       {
-        "candidate": {
-          "id": "control-project-summary",
-          "route_id": "project-summary",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/summary",
-          "source": "public_non_private_resource"
-        },
-        "owner": {
-          "actor": "owner_control",
-          "route_id": "project-summary",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/summary",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "3817b010e405bcbbaa5d47c769f2afde2efc902c3edd68067a95f1a4561628a0",
-          "semantic": {
-            "kind": "public_project_summary",
-            "marker": "project-public:project-alpha",
-            "owner_id": null,
-            "project_id": "project-alpha",
-            "operation": "summary",
-            "reason": null
-          }
-        },
-        "outsider": {
-          "actor": "outsider_control",
-          "route_id": "project-summary",
-          "method": "GET",
-          "path": "/api/projects/project-alpha/summary",
-          "status": 200,
-          "content_type": "application/json; charset=utf-8",
-          "response_body_sha256": "3817b010e405bcbbaa5d47c769f2afde2efc902c3edd68067a95f1a4561628a0",
-          "semantic": {
-            "kind": "public_project_summary",
-            "marker": "project-public:project-alpha",
-            "owner_id": null,
-            "project_id": "project-alpha",
-            "operation": "summary",
-            "reason": null
-          }
-        }
+        "route_id": "query",
+        "source": "derived_related_variant",
+        "verdict": "NOT_CONTRADICTED_IN_TESTED_SCOPE",
+        "contradiction": false,
+        "basis": [
+          "both_cross_tenant_probes_definitively_denied"
+        ]
       }
     ]
   },
-  "oracle": {
-    "status_only_means_vulnerability": false,
-    "results": [
+  "execution": {
+    "actors": [
+      "actor_a",
+      "actor_b"
+    ],
+    "real_credentials": 0,
+    "external_targets": 0,
+    "receipts": [
       {
-        "candidate_id": "seed-project-read",
-        "route_id": "project-read",
-        "path": "/api/projects/project-alpha",
-        "owner_private_control_proven": true,
-        "outsider_same_private_authority_proven": true,
-        "contradiction": true,
-        "verdict": "boundary_contradicted",
-        "basis": "outsider_received_the_same_semantic_private_resource_as_the_owner_control"
+        "route_id": "original",
+        "actor_a_own": {
+          "actor": "actor_a",
+          "role": "owner_control",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/invoices/481",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        },
+        "actor_b_own": {
+          "actor": "actor_b",
+          "role": "owner_control",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/invoices/902",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_a_cross": {
+          "actor": "actor_a",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/invoices/902",
+          "status": 403,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "b0d2df3ed9997f16da66684351204f2801753b44c7c9da45bc404c7674f16243",
+          "semantic": {
+            "kind": null,
+            "tenant_id": null,
+            "user_id": null,
+            "account_id": null,
+            "invoice_id": null,
+            "resource_id": null,
+            "marker": null,
+            "sensitive_field": null,
+            "sensitive_fields": null,
+            "operational_capability": null,
+            "capabilities": null,
+            "prohibited_metadata": null,
+            "error": "forbidden"
+          }
+        },
+        "actor_b_cross": {
+          "actor": "actor_b",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/invoices/481",
+          "status": 403,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "b0d2df3ed9997f16da66684351204f2801753b44c7c9da45bc404c7674f16243",
+          "semantic": {
+            "kind": null,
+            "tenant_id": null,
+            "user_id": null,
+            "account_id": null,
+            "invoice_id": null,
+            "resource_id": null,
+            "marker": null,
+            "sensitive_field": null,
+            "sensitive_fields": null,
+            "operational_capability": null,
+            "capabilities": null,
+            "prohibited_metadata": null,
+            "error": "forbidden"
+          }
+        }
       },
       {
-        "candidate_id": "variant-project-audit",
-        "route_id": "project-audit",
-        "path": "/api/projects/project-alpha/audit",
-        "owner_private_control_proven": true,
-        "outsider_same_private_authority_proven": true,
-        "contradiction": true,
-        "verdict": "boundary_contradicted",
-        "basis": "outsider_received_the_same_semantic_private_resource_as_the_owner_control"
+        "route_id": "v2",
+        "actor_a_own": {
+          "actor": "actor_a",
+          "role": "owner_control",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/v2/invoices/481",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        },
+        "actor_b_own": {
+          "actor": "actor_b",
+          "role": "owner_control",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/v2/invoices/902",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_a_cross": {
+          "actor": "actor_a",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/v2/invoices/902",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_b_cross": {
+          "actor": "actor_b",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/v2/invoices/481",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        }
       },
       {
-        "candidate_id": "variant-project-export",
-        "route_id": "project-export",
-        "path": "/api/projects/project-alpha/export",
-        "owner_private_control_proven": true,
-        "outsider_same_private_authority_proven": true,
-        "contradiction": true,
-        "verdict": "boundary_contradicted",
-        "basis": "outsider_received_the_same_semantic_private_resource_as_the_owner_control"
+        "route_id": "export",
+        "actor_a_own": {
+          "actor": "actor_a",
+          "role": "owner_control",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/invoices/481/export",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        },
+        "actor_b_own": {
+          "actor": "actor_b",
+          "role": "owner_control",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/invoices/902/export",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_a_cross": {
+          "actor": "actor_a",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/invoices/902/export",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_b_cross": {
+          "actor": "actor_b",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/invoices/481/export",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        }
       },
       {
-        "candidate_id": "control-project-summary",
-        "route_id": "project-summary",
-        "path": "/api/projects/project-alpha/summary",
-        "owner_private_control_proven": false,
-        "outsider_same_private_authority_proven": false,
-        "contradiction": false,
-        "verdict": "boundary_held",
-        "basis": "semantic_private_owner_control_not_proven_so_http_status_is_not_treated_as_authority"
+        "route_id": "nested",
+        "actor_a_own": {
+          "actor": "actor_a",
+          "role": "owner_control",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/accounts/7/invoices/481",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        },
+        "actor_b_own": {
+          "actor": "actor_b",
+          "role": "owner_control",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/accounts/9/invoices/902",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_a_cross": {
+          "actor": "actor_a",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/accounts/9/invoices/902",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_b_cross": {
+          "actor": "actor_b",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/accounts/7/invoices/481",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        }
+      },
+      {
+        "route_id": "query",
+        "actor_a_own": {
+          "actor": "actor_a",
+          "role": "owner_control",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/invoices?id=481",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "0d06dc923178a6b9653dbcb6088998e5d26c3b2c60653ab695a266786ba0507a",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-a",
+            "user_id": "user-a",
+            "account_id": "7",
+            "invoice_id": "481",
+            "resource_id": "481",
+            "marker": "BOQA_TENANT_A_7F39",
+            "sensitive_field": "payment-reference-481",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-7"
+            },
+            "error": null
+          }
+        },
+        "actor_b_own": {
+          "actor": "actor_b",
+          "role": "owner_control",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/invoices?id=902",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "94d6d631d5d396c599be77462dc760d00944a027ede9e9538e89f6500edeb184",
+          "semantic": {
+            "kind": "private_invoice",
+            "tenant_id": "tenant-b",
+            "user_id": "user-b",
+            "account_id": "9",
+            "invoice_id": "902",
+            "resource_id": "902",
+            "marker": "BOQA_TENANT_B_3C21",
+            "sensitive_field": "payment-reference-902",
+            "sensitive_fields": null,
+            "operational_capability": "invoice_export",
+            "capabilities": null,
+            "prohibited_metadata": {
+              "ledger_partition": "tenant-ledger-9"
+            },
+            "error": null
+          }
+        },
+        "actor_a_cross": {
+          "actor": "actor_a",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_b",
+          "method": "GET",
+          "path": "/api/invoices?id=902",
+          "status": 403,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "b0d2df3ed9997f16da66684351204f2801753b44c7c9da45bc404c7674f16243",
+          "semantic": {
+            "kind": null,
+            "tenant_id": null,
+            "user_id": null,
+            "account_id": null,
+            "invoice_id": null,
+            "resource_id": null,
+            "marker": null,
+            "sensitive_field": null,
+            "sensitive_fields": null,
+            "operational_capability": null,
+            "capabilities": null,
+            "prohibited_metadata": null,
+            "error": "forbidden"
+          }
+        },
+        "actor_b_cross": {
+          "actor": "actor_b",
+          "role": "cross_tenant_probe",
+          "target_actor": "actor_a",
+          "method": "GET",
+          "path": "/api/invoices?id=481",
+          "status": 403,
+          "content_type": "application/json; charset=utf-8",
+          "body_sha256": "b0d2df3ed9997f16da66684351204f2801753b44c7c9da45bc404c7674f16243",
+          "semantic": {
+            "kind": null,
+            "tenant_id": null,
+            "user_id": null,
+            "account_id": null,
+            "invoice_id": null,
+            "resource_id": null,
+            "marker": null,
+            "sensitive_field": null,
+            "sensitive_fields": null,
+            "operational_capability": null,
+            "capabilities": null,
+            "prohibited_metadata": null,
+            "error": "forbidden"
+          }
+        }
       }
     ]
   },
@@ -246,15 +783,15 @@
     "true_positives": 3,
     "false_positives": 0,
     "false_negatives": 0,
-    "true_negatives": 1,
-    "contradictions": 3,
-    "protected_cases": 3,
-    "public_controls": 1
+    "true_negatives": 2,
+    "unproven": 0,
+    "invalid_experiments": 0
   },
   "exact_outputs": [
     "boundary-contract.yaml",
     "boundary-regression.spec.ts",
     "evidence.json"
   ],
-  "evidence_payload_sha256": "67b1078279ddd556d15fb1d38d01a64a04d557aafbc72c54c406c8625aa1f7d3"
+  "generated_test_sha256": "bd5709b55b58a62674fe8f614c8bbe49939516c14b7627943416dccd52374f2d",
+  "evidence_payload_sha256": "3fb1d2100de0f4a8e6baec13d309e6838bda99c9e5dc78c4b56e0344dc4044bd"
 }
