@@ -8,6 +8,7 @@ const { EventBus } = require('./bus');
 const { createBillingAuth, setPrivateHeaders } = require('./lib/billing-auth');
 const { DefensiveValidationService } = require('./lib/defensive-validation');
 const { HunterRuntime } = require('./lib/hunter-runtime');
+const { HumanGateBus } = require('./cuore');
 const { createHealthHandler } = require('./lib/health');
 const { CONFIG, OUTPUT_DIR } = require('./lib/config');
 const {
@@ -32,6 +33,9 @@ const ctx = {
   agentInitError: 'browser_executor_requires_explicit_scope',
 };
 ctx.defensiveValidation = new DefensiveValidationService();
+ctx.cuore = {
+  humanGateBus: new HumanGateBus({ filePath: path.join(OUTPUT_DIR, 'cuore', 'human-gates.jsonl') }),
+};
 
 function provideHunterPolicy() {
   try {
@@ -119,6 +123,17 @@ app.get('/api/private/billing/data', billingAuth.requireSession, (_req, res) => 
   sections: [],
 }));
 app.post('/api/private/billing/logout', billingAuth.logout);
+app.get('/api/private/human-gates', requireStrongProxyAuth, rateLimiter, (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    return res.json({ gates: ctx.cuore.humanGateBus.readQueue() });
+  } catch (error) {
+    if (error.code === 'HUMAN_GATE_READ_UNAVAILABLE') {
+      return res.status(503).json({ error: 'human_gate_read_unavailable' });
+    }
+    throw error;
+  }
+});
 
 const PUBLIC_READ_PATHS = new Set(['/health', '/defensive/status', '/hunter/status']);
 app.use('/api', (req, res, next) => {
