@@ -1,0 +1,379 @@
+{
+  "mission": "BOQA-PARALLEL-001-LAYA-RADAR-SKILL-QUALIFICATION",
+  "verified_at": "2026-09-25T03:26:00Z",
+  "discovery_is_authorization": false,
+  "target_asset_requests": 0,
+  "sources": [
+    {
+      "source": "MoltJobs",
+      "type": "AGENT_MARKET",
+      "official_url": "https://moltjobs.io/",
+      "discovery_method": "GET /v1/jobs?status=OPEN via official REST/SDK/CLI; read-only public endpoints may not require key",
+      "public_or_auth_required": "PUBLIC_READ_DISCOVERY; API key required for account/state-changing operations",
+      "machine_readable_api": true,
+      "webhook_available": true,
+      "polling_required": false,
+      "rate_limit": "120 requests/min documented on current site",
+      "task_or_program_status": [
+        "OPEN and lifecycle fields via jobs API"
+      ],
+      "reward_fields": [
+        "budgetUsdc",
+        "escrow/payment metadata per SDK/docs"
+      ],
+      "deadline_fields": [
+        "deadlineAt"
+      ],
+      "scope_fields": [
+        "job deliverable/template/acceptance criteria"
+      ],
+      "policy_fields": [
+        "job status",
+        "acceptanceCriteria",
+        "certification/eval gates"
+      ],
+      "automation_policy": "market is explicitly agent-oriented; bidding/execution still state-changing and outside this lane",
+      "submission_method": "API/MCP/CLI after authorization; NOT QUALIFIED FOR BOQA ACTION",
+      "kyc": "UNKNOWN/owner-account verification must be checked before action",
+      "payout_rail": "USDC escrow on Base",
+      "region_restrictions": "UNKNOWN; must be evaluated per account/job",
+      "change_detection_method": "job id + canonical metadata hash + webhook where available",
+      "expected_requests_per_hour": 2,
+      "boqa_fit": "HIGH for read-only paid-task radar; BEST_AGENT_MARKET candidate",
+      "blockers": [
+        "bid requires account/key and capability/eval gates",
+        "wallet/withdraw/bid paths are prohibited until separately authorized"
+      ],
+      "sources": [
+        "https://moltjobs.io/",
+        "https://github.com/Moltjobs",
+        "https://github.com/Moltjobs/moltjobs-js"
+      ]
+    },
+    {
+      "source": "Virtuals ACP",
+      "type": "SERVICE_MARKET",
+      "official_url": "https://whitepaper.virtuals.io/about-virtuals/commerce-layer",
+      "discovery_method": "ACP/onchain commerce layer; provider/evaluator/job discovery must be implemented from official ACP interfaces only",
+      "public_or_auth_required": "PUBLIC_DOCS; transaction/provider participation requires onchain identity/wallet",
+      "machine_readable_api": "YES_PROTOCOL; exact minimal read-only catalog endpoint NOT QUALIFIED in this lane",
+      "webhook_available": "NOT_VERIFIED",
+      "polling_required": true,
+      "rate_limit": "NOT_VERIFIED",
+      "task_or_program_status": [
+        "ACP job/agreement lifecycle exists onchain"
+      ],
+      "reward_fields": [
+        "onchain payment/agreement terms"
+      ],
+      "deadline_fields": [
+        "agreement-dependent"
+      ],
+      "scope_fields": [
+        "service/job specification"
+      ],
+      "policy_fields": [
+        "ACP agreement/evaluation rules"
+      ],
+      "automation_policy": "agent-native commerce, but onchain agreements and payments are state-changing",
+      "submission_method": "ACP transaction flow; prohibited until wallet/sign authority exists",
+      "kyc": "UNKNOWN/program/provider dependent",
+      "payout_rail": "onchain ACP payments",
+      "region_restrictions": "UNKNOWN",
+      "change_detection_method": "protocol/indexer event or polling once exact interface is qualified",
+      "expected_requests_per_hour": 2,
+      "boqa_fit": "MEDIUM for metadata; BLOCKED for execution by wallet authority",
+      "blockers": [
+        "exact read-only discovery interface not frozen",
+        "wallet/onchain action required for commerce execution"
+      ],
+      "sources": [
+        "https://whitepaper.virtuals.io/",
+        "https://whitepaper.virtuals.io/llms.txt"
+      ]
+    },
+    {
+      "source": "x402/Bazaar",
+      "type": "SERVICE_MARKET",
+      "official_url": "https://docs.cdp.coinbase.com/x402/welcome",
+      "discovery_method": "CDP x402 discovery REST list/search or Bazaar MCP search_resources",
+      "public_or_auth_required": "AUTH_REQUIRED for CDP REST/MCP token; catalog is machine-readable",
+      "machine_readable_api": true,
+      "webhook_available": false,
+      "polling_required": true,
+      "rate_limit": "account/API limits apply; exact discovery limit not established here",
+      "task_or_program_status": [
+        "active discovered resources"
+      ],
+      "reward_fields": [
+        "accepts.amount",
+        "asset",
+        "network",
+        "payTo"
+      ],
+      "deadline_fields": [
+        "maxTimeoutSeconds is payment timeout, not work deadline"
+      ],
+      "scope_fields": [
+        "resource URL",
+        "input schema",
+        "service metadata"
+      ],
+      "policy_fields": [
+        "x402Version",
+        "payment requirements",
+        "extensions"
+      ],
+      "automation_policy": "designed for machine payments; BOQA consumer payment requires signer and is prohibited; seller receive-only is the relevant future path",
+      "submission_method": "seller exposes paid endpoint; buyer calls resource with x402 payment",
+      "kyc": "CDP account/product dependent; self-custody seller address also supported",
+      "payout_rail": "x402 settlement, currently Base/Solana paths documented",
+      "region_restrictions": "provider/account dependent",
+      "change_detection_method": "resource URL + lastUpdated + payment metadata hash",
+      "expected_requests_per_hour": 2,
+      "boqa_fit": "HIGH as BEST_INBOUND_PAYMENT_RAIL; not primarily a paid-job board",
+      "blockers": [
+        "consumer calls can spend/sign",
+        "BOQA must keep receive-only seller path separate from buyer wallet path"
+      ],
+      "sources": [
+        "https://docs.cdp.coinbase.com/x402/welcome",
+        "https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/list-x402-resources",
+        "https://docs.cdp.coinbase.com/api-reference/v2/rest-api/x402-facilitator/bazaar-mcp-server"
+      ]
+    },
+    {
+      "source": "Olas Mech Marketplace",
+      "type": "SERVICE_MARKET",
+      "official_url": "https://docs.olas.network/",
+      "discovery_method": "official Mech Marketplace supply/demand interfaces; exact minimal read-only listing endpoint not frozen here",
+      "public_or_auth_required": "PUBLIC_DOCS; onchain marketplace execution requires chain interaction",
+      "machine_readable_api": "PROTOCOL/SDK YES; read-only catalog endpoint NOT_QUALIFIED",
+      "webhook_available": "NOT_VERIFIED",
+      "polling_required": true,
+      "rate_limit": "NOT_VERIFIED",
+      "task_or_program_status": [
+        "service/request lifecycle"
+      ],
+      "reward_fields": [
+        "onchain marketplace payment"
+      ],
+      "deadline_fields": [
+        "request-dependent"
+      ],
+      "scope_fields": [
+        "mech service/tool"
+      ],
+      "policy_fields": [
+        "marketplace/protocol rules"
+      ],
+      "automation_policy": "agent-native decentralized marketplace",
+      "submission_method": "onchain Mech request/provider flow",
+      "kyc": "NOT_VERIFIED",
+      "payout_rail": "crypto/onchain",
+      "region_restrictions": "NOT_VERIFIED",
+      "change_detection_method": "contract/indexer events once exact interface is qualified",
+      "expected_requests_per_hour": 2,
+      "boqa_fit": "MEDIUM; useful provider market but execution requires chain authority",
+      "blockers": [
+        "exact discovery API not frozen",
+        "onchain execution/signing outside authority"
+      ],
+      "sources": [
+        "https://docs.olas.network/"
+      ]
+    },
+    {
+      "source": "HackerOne",
+      "type": "BUG_BOUNTY",
+      "official_url": "https://www.hackerone.com/",
+      "discovery_method": "public program pages plus authenticated Hacker API for program/scope data",
+      "public_or_auth_required": "PUBLIC_PROGRAMS; Hacker API token for structured authenticated access",
+      "machine_readable_api": true,
+      "webhook_available": "customer event integrations exist; no public researcher catalog webhook qualified",
+      "polling_required": true,
+      "rate_limit": "NOT_STATED_IN_QUALIFIED_HACKER_API_SOURCE; program-specific testing limits always control",
+      "task_or_program_status": [
+        "programs",
+        "structured_scopes",
+        "scope_exclusions",
+        "bounty/earnings via Hacker API"
+      ],
+      "reward_fields": [
+        "bounty tables/earnings"
+      ],
+      "deadline_fields": [
+        "campaign/program dependent"
+      ],
+      "scope_fields": [
+        "structured_scopes",
+        "scope_exclusions"
+      ],
+      "policy_fields": [
+        "program policy",
+        "Code of Conduct",
+        "testing restrictions"
+      ],
+      "automation_policy": "AI/automation allowed only within each program policy; Hackbots must be human-in-the-loop and findings validated before submission",
+      "submission_method": "HackerOne report UI/API as permitted; BOQA A4 stays HUMAN_GATE",
+      "kyc": "payout/account dependent",
+      "payout_rail": "HackerOne payout system",
+      "region_restrictions": "program/account dependent",
+      "change_detection_method": "program handle + structured scope/policy hash + updated metadata",
+      "expected_requests_per_hour": 1,
+      "boqa_fit": "HIGH for metadata radar; BEST_BOUNTY_RADAR_SOURCE candidate due structured Hacker API",
+      "blockers": [
+        "API auth",
+        "program-specific automation/rate policy must be current",
+        "human validation required before report submission"
+      ],
+      "sources": [
+        "https://api.hackerone.com/getting-started-hacker-api/",
+        "https://api.hackerone.com/hacker-resources/",
+        "https://www.hackerone.com/policies/code-of-conduct"
+      ]
+    },
+    {
+      "source": "Bugcrowd",
+      "type": "BUG_BOUNTY",
+      "official_url": "https://bugcrowd.com/",
+      "discovery_method": "public program briefs; authenticated Bugcrowd API for accessible program data",
+      "public_or_auth_required": "PUBLIC_BRIEFS; API tokens are role/user scoped",
+      "machine_readable_api": true,
+      "webhook_available": "platform/customer integrations exist; researcher catalog webhook NOT_QUALIFIED",
+      "polling_required": true,
+      "rate_limit": "60 requests/min per IP for Bugcrowd API",
+      "task_or_program_status": [
+        "programs/current briefs"
+      ],
+      "reward_fields": [
+        "target group reward_range",
+        "funding/reward metadata"
+      ],
+      "deadline_fields": [
+        "program/campaign dependent"
+      ],
+      "scope_fields": [
+        "target_groups.targets"
+      ],
+      "policy_fields": [
+        "program brief",
+        "disclosure policy",
+        "automation limits"
+      ],
+      "automation_policy": "GenAI-assisted findings must be manually verified/reproducible; program scope and testing restrictions control",
+      "submission_method": "researcher report workflow; API write capability is permission-dependent and not assumed",
+      "kyc": "payout/account dependent",
+      "payout_rail": "Bugcrowd researcher payout system",
+      "region_restrictions": "program/account dependent",
+      "change_detection_method": "program UUID + brief/scope/reward hash",
+      "expected_requests_per_hour": 1,
+      "boqa_fit": "HIGH for authenticated structured metadata; public-only fallback may require brief polling",
+      "blockers": [
+        "API visibility depends on account role",
+        "manual verification required for GenAI-assisted findings"
+      ],
+      "sources": [
+        "https://docs.bugcrowd.com/api/getting-started/",
+        "https://docs.bugcrowd.com/api/usage/",
+        "https://docs.bugcrowd.com/customers/ai-capabilities/ai-privacy-security/"
+      ]
+    },
+    {
+      "source": "Intigriti",
+      "type": "BUG_BOUNTY",
+      "official_url": "https://www.intigriti.com/",
+      "discovery_method": "public program UI plus Researcher API V1 beta for program/program-activity queries",
+      "public_or_auth_required": "PUBLIC_PROGRAMS; researcher API token required for structured private/account data",
+      "machine_readable_api": true,
+      "webhook_available": "NOT_VERIFIED_FOR_RESEARCHER_API",
+      "polling_required": true,
+      "rate_limit": "NOT_VERIFIED_IN_QUALIFIED_PUBLIC_DOCS",
+      "task_or_program_status": [
+        "programs",
+        "program activities/updates"
+      ],
+      "reward_fields": [
+        "bounty tiers/program data"
+      ],
+      "deadline_fields": [
+        "program dependent"
+      ],
+      "scope_fields": [
+        "program domains/assets"
+      ],
+      "policy_fields": [
+        "testing requirements",
+        "program updates",
+        "custom terms",
+        "safe harbor"
+      ],
+      "automation_policy": "be gentle; programs may forbid automated testing or impose rate limits; exact program rule controls",
+      "submission_method": "Create Submission workflow; action remains HUMAN_GATE",
+      "kyc": "account/payout dependent",
+      "payout_rail": "Intigriti payout system",
+      "region_restrictions": "program/account dependent",
+      "change_detection_method": "program id + update/policy/scope hash",
+      "expected_requests_per_hour": 1,
+      "boqa_fit": "HIGH once researcher API credentials are available; public metadata usable before that",
+      "blockers": [
+        "Researcher API is beta",
+        "rate limit must be discovered before automated polling",
+        "program-specific automation rules"
+      ],
+      "sources": [
+        "https://kb.intigriti.com/en/articles/8529303-intigriti-researcher-api",
+        "https://kb.intigriti.com/en/articles/5247238-community-code-of-conduct",
+        "https://kb.intigriti.com/en/articles/6899431-program-details"
+      ]
+    },
+    {
+      "source": "Immunefi",
+      "type": "BUG_BOUNTY",
+      "official_url": "https://immunefi.com/bug-bounty/",
+      "discovery_method": "public bounty catalog/program pages; metadata polling only",
+      "public_or_auth_required": "PUBLIC_CATALOG; account required for submission",
+      "machine_readable_api": false,
+      "webhook_available": false,
+      "polling_required": true,
+      "rate_limit": "NOT_PUBLISHED_FOR_CATALOG; use conservative polling",
+      "task_or_program_status": [
+        "public live bounty listings",
+        "last updated"
+      ],
+      "reward_fields": [
+        "MAX BOUNTY",
+        "program bounty rules"
+      ],
+      "deadline_fields": [
+        "program dependent"
+      ],
+      "scope_fields": [
+        "Assets in Scope tables"
+      ],
+      "policy_fields": [
+        "KYC",
+        "PoC",
+        "responsible publication",
+        "prohibited activities"
+      ],
+      "automation_policy": "program-specific; default prohibited activities include high-traffic automated testing and mainnet/public-testnet testing for many web3 programs",
+      "submission_method": "Immunefi submission workflow; BOQA submission stays HUMAN_GATE",
+      "kyc": "PROGRAM_SPECIFIC; catalog exposes KYC required/not required",
+      "payout_rail": "program-specific crypto/stablecoin terms",
+      "region_restrictions": "eligibility criteria/program dependent",
+      "change_detection_method": "program slug + last-updated + normalized policy/scope/reward hash",
+      "expected_requests_per_hour": 1,
+      "boqa_fit": "HIGH public radar fit despite no qualified official API; strongest web3 bounty metadata source",
+      "blockers": [
+        "HTML/public-page parser required",
+        "local-fork-only testing commonly required",
+        "KYC may block payout"
+      ],
+      "sources": [
+        "https://immunefi.com/bug-bounty/",
+        "https://immunefi.com/bug-bounty/immunefi/information/"
+      ]
+    }
+  ]
+}

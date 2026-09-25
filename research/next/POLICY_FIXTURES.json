@@ -1,0 +1,263 @@
+{
+  "schema_version": "1.0",
+  "verified_at": "2026-09-25T03:26:00Z",
+  "invariant": "DISCOVERY != AUTHORIZATION",
+  "decisions": [
+    "PASS",
+    "DENY",
+    "HUMAN_GATE"
+  ],
+  "fixtures": [
+    {
+      "id": "agent_native_paid_task_pass",
+      "archetype": "AGENT_NATIVE_PAID_TASK",
+      "manifest": {
+        "platform": "MoltJobs-like",
+        "program_id": "synthetic-agent-task-001",
+        "policy_url": "https://example.invalid/policy",
+        "policy_hash": "sha256:synthetic1",
+        "scope_hash": "sha256:scope1",
+        "safe_harbor": "N/A_CONTRACT_TASK",
+        "automation_allowed": true,
+        "automation_rate_limit": "120/min metadata; task-specific execution limits must also pass",
+        "allowed_test_classes": [
+          "LOCAL_ANALYSIS",
+          "DOCUMENT_RESEARCH"
+        ],
+        "prohibited_test_classes": [
+          "TARGET_SECURITY_TESTING"
+        ],
+        "account_rules": "valid agent account/certification if required",
+        "data_handling_rules": "task data only",
+        "disclosure_rules": "task contract controls",
+        "submission_channel": "market task delivery channel",
+        "ai_submission_rules": "agent-native",
+        "kyc_requirement": "UNKNOWN",
+        "payout_terms": "verified escrow required",
+        "verified_at": "2026-09-25T03:26:00Z",
+        "expires_at": "2026-09-26T03:26:00Z"
+      },
+      "context": {
+        "scope_current": true,
+        "capability_ready": true,
+        "no_spend": true,
+        "human_review_required": false
+      },
+      "expected_decision": "PASS",
+      "reason": "metadata and task contract explicitly allow autonomous non-security work; no authority expansion"
+    },
+    {
+      "id": "hackerone_like_human_submit",
+      "archetype": "HACKERONE_LIKE",
+      "manifest": {
+        "platform": "HackerOne-like",
+        "program_id": "synthetic-h1-001",
+        "policy_url": "https://example.invalid/h1",
+        "policy_hash": "sha256:h1",
+        "scope_hash": "sha256:h1scope",
+        "safe_harbor": "program-specific",
+        "automation_allowed": true,
+        "automation_rate_limit": "program-specific",
+        "allowed_test_classes": [
+          "LOW_IMPACT_AUTHORIZED"
+        ],
+        "prohibited_test_classes": [
+          "DOS",
+          "OUT_OF_SCOPE"
+        ],
+        "account_rules": "researcher account",
+        "data_handling_rules": "program policy",
+        "disclosure_rules": "program policy",
+        "submission_channel": "platform report",
+        "ai_submission_rules": "AI-assisted allowed but human validation required",
+        "kyc_requirement": "UNKNOWN",
+        "payout_terms": "program-specific",
+        "verified_at": "2026-09-25T03:26:00Z",
+        "expires_at": "2026-09-26T03:26:00Z"
+      },
+      "context": {
+        "scope_current": true,
+        "capability_ready": true,
+        "report_submission": true,
+        "human_review_required": true
+      },
+      "expected_decision": "HUMAN_GATE",
+      "reason": "research may be authorized but report validation/submission is human-in-the-loop"
+    },
+    {
+      "id": "bugcrowd_like_human_verify",
+      "archetype": "BUGCROWD_LIKE",
+      "manifest": {
+        "platform": "Bugcrowd-like",
+        "program_id": "synthetic-bc-001",
+        "policy_url": "https://example.invalid/bc",
+        "policy_hash": "sha256:bc",
+        "scope_hash": "sha256:bcscope",
+        "safe_harbor": "brief-specific",
+        "automation_allowed": true,
+        "automation_rate_limit": "brief-specific",
+        "allowed_test_classes": [
+          "AUTHORIZED_LOW_IMPACT"
+        ],
+        "prohibited_test_classes": [
+          "OUT_OF_SCOPE",
+          "DISRUPTIVE_TRAFFIC"
+        ],
+        "account_rules": "researcher account",
+        "data_handling_rules": "brief/disclosure terms",
+        "disclosure_rules": "default nondisclosure unless approved",
+        "submission_channel": "platform report",
+        "ai_submission_rules": "GenAI-assisted outputs require manual verification/reproducibility",
+        "kyc_requirement": "UNKNOWN",
+        "payout_terms": "program-specific",
+        "verified_at": "2026-09-25T03:26:00Z",
+        "expires_at": "2026-09-26T03:26:00Z"
+      },
+      "context": {
+        "scope_current": true,
+        "capability_ready": true,
+        "ai_assisted": true,
+        "manual_validation_done": false
+      },
+      "expected_decision": "HUMAN_GATE",
+      "reason": "AI-assisted finding is not submission-authorized until human verification"
+    },
+    {
+      "id": "intigriti_like_rate_bound",
+      "archetype": "INTIGRITI_LIKE",
+      "manifest": {
+        "platform": "Intigriti-like",
+        "program_id": "synthetic-int-001",
+        "policy_url": "https://example.invalid/int",
+        "policy_hash": "sha256:int",
+        "scope_hash": "sha256:intscope",
+        "safe_harbor": "enabled",
+        "automation_allowed": true,
+        "automation_rate_limit": "5 req/s synthetic explicit",
+        "allowed_test_classes": [
+          "LOW_IMPACT_WEB"
+        ],
+        "prohibited_test_classes": [
+          "INTRUSIVE_PRODUCTION_COMMANDS"
+        ],
+        "account_rules": "researcher account",
+        "data_handling_rules": "no unapproved third-party processing",
+        "disclosure_rules": "written approval required",
+        "submission_channel": "platform submission",
+        "ai_submission_rules": "no global permission inferred",
+        "kyc_requirement": "UNKNOWN",
+        "payout_terms": "program-specific",
+        "verified_at": "2026-09-25T03:26:00Z",
+        "expires_at": "2026-09-26T03:26:00Z"
+      },
+      "context": {
+        "scope_current": true,
+        "requested_rate": "1 req/s",
+        "action_class": "LOW_IMPACT_WEB"
+      },
+      "expected_decision": "PASS",
+      "reason": "explicit rate and action class fit current policy; submission remains a separate gate"
+    },
+    {
+      "id": "immunefi_like_local_fork",
+      "archetype": "IMMUNEFI_LIKE",
+      "manifest": {
+        "platform": "Immunefi-like",
+        "program_id": "synthetic-imm-001",
+        "policy_url": "https://example.invalid/imm",
+        "policy_hash": "sha256:imm",
+        "scope_hash": "sha256:immscope",
+        "safe_harbor": "program-specific",
+        "automation_allowed": true,
+        "automation_rate_limit": "no significant traffic",
+        "allowed_test_classes": [
+          "LOCAL_FORK"
+        ],
+        "prohibited_test_classes": [
+          "MAINNET",
+          "PUBLIC_TESTNET",
+          "DOS",
+          "THIRD_PARTY_SYSTEM"
+        ],
+        "account_rules": "researcher account",
+        "data_handling_rules": "program-specific",
+        "disclosure_rules": "approval required",
+        "submission_channel": "Immunefi report",
+        "ai_submission_rules": "UNKNOWN",
+        "kyc_requirement": "NOT_REQUIRED",
+        "payout_terms": "program-specific",
+        "verified_at": "2026-09-25T03:26:00Z",
+        "expires_at": "2026-09-26T03:26:00Z"
+      },
+      "context": {
+        "scope_current": true,
+        "action_class": "LOCAL_FORK",
+        "network_target": false
+      },
+      "expected_decision": "PASS",
+      "reason": "local-fork-only test is explicitly modeled as allowed; no target network request"
+    },
+    {
+      "id": "scope_changed",
+      "archetype": "ADVERSARIAL",
+      "mutation": "scope_hash differs from authorization snapshot",
+      "expected_decision": "HUMAN_GATE",
+      "reason": "POLICY_CHANGED invalidates prior authorization"
+    },
+    {
+      "id": "automation_forbidden",
+      "archetype": "ADVERSARIAL",
+      "mutation": "automation_allowed=false",
+      "expected_decision": "DENY",
+      "reason": "explicit prohibition is a hard gate"
+    },
+    {
+      "id": "automation_unknown",
+      "archetype": "ADVERSARIAL",
+      "mutation": "automation_allowed=UNKNOWN",
+      "expected_decision": "HUMAN_GATE",
+      "reason": "unknown permission cannot be inferred"
+    },
+    {
+      "id": "rate_limit_missing",
+      "archetype": "ADVERSARIAL",
+      "mutation": "automation allowed but automation_rate_limit missing for network activity",
+      "expected_decision": "HUMAN_GATE",
+      "reason": "RATE_LIMIT_UNKNOWN"
+    },
+    {
+      "id": "mainnet_forbidden",
+      "archetype": "ADVERSARIAL",
+      "mutation": "target is in scope but requested action is MAINNET and prohibited_test_classes contains MAINNET",
+      "expected_decision": "DENY",
+      "reason": "target scope does not authorize a prohibited action"
+    },
+    {
+      "id": "kyc_required",
+      "archetype": "ADVERSARIAL",
+      "mutation": "kyc_requirement=REQUIRED and operation includes payout eligibility",
+      "expected_decision": "HUMAN_GATE",
+      "reason": "KYC_REQUIRED"
+    },
+    {
+      "id": "human_validation_required",
+      "archetype": "ADVERSARIAL",
+      "mutation": "submission requires human validation",
+      "expected_decision": "HUMAN_GATE",
+      "reason": "REPORT_SUBMISSION_REQUIRES_HUMAN_REVIEW"
+    },
+    {
+      "id": "ai_report_restricted",
+      "archetype": "ADVERSARIAL",
+      "mutation": "ai_submission_rules prohibit unverified AI-generated reports; output is AI-assisted and unverified",
+      "expected_decision": "DENY",
+      "reason": "submission violates explicit AI-report restriction"
+    }
+  ],
+  "official_policy_sources": [
+    "https://www.hackerone.com/policies/code-of-conduct",
+    "https://docs.bugcrowd.com/customers/ai-capabilities/ai-privacy-security/",
+    "https://kb.intigriti.com/en/articles/5247238-community-code-of-conduct",
+    "https://immunefi.com/bug-bounty/immunefi/information/"
+  ]
+}

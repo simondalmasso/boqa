@@ -1,0 +1,8 @@
+# SHA256 manifest for BOQA qualification evidence
+# generated from exact UTF-8/ASCII file bytes in this commit
+b9e39b57dbd203d6a1dca690815ddacebe953d43f0e76aa4056abcf4b555c170  evidence/qualification/laya-benchmark/README.md
+32439494bd35a21a9daef11d648a3e96668a215c70e6d85ae2f9c0806d1dc618  evidence/qualification/laya-benchmark/fixtures.json
+82102530aa9784871784e3507b7c5189519724e5815f21fe57b1fadefe2fc679  research/next/LAYA_QUALIFICATION.md
+2b26ea931260e187fe10c06de4b9886559e954ed1ceb23937de82ff04d4dd47f  research/next/POLICY_FIXTURES.json
+3e51bc83044756740d923f4e71fa8fe1b65e0451db6f309218468fb0eabba0ba  research/next/RADAR_SOURCE_MATRIX.json
+44fdf2c5004b32607b48de0178fd22cee486bbb4df46538dbff983c043e6a4a8  research/next/SKILL_REGISTRY_CANDIDATES.json
