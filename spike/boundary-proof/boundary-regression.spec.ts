@@ -4,37 +4,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const BASE_URL = requiredEnv('BOUNDARY_BASE_URL').replace(/\/$/, '');
-const OWNER_TOKEN = requiredEnv('BOUNDARY_OWNER_TOKEN');
-const OUTSIDER_TOKEN = requiredEnv('BOUNDARY_OUTSIDER_TOKEN');
-const PRIVATE_KIND = "private_project_resource";
-const PRIVATE_MARKER = "project-private:project-alpha";
-const EXPECTED_OWNER = "owner-alpha";
-const PROTECTED_CASES = [
-  {
-    "id": "seed-project-read",
-    "method": "GET",
-    "path": "/api/projects/project-alpha",
-    "operation": "read"
-  },
-  {
-    "id": "variant-project-audit",
-    "method": "GET",
-    "path": "/api/projects/project-alpha/audit",
-    "operation": "audit"
-  },
-  {
-    "id": "variant-project-export",
-    "method": "GET",
-    "path": "/api/projects/project-alpha/export",
-    "operation": "export"
-  }
-];
-const PUBLIC_CONTROL = {
-  "id": "control-project-summary",
-  "method": "GET",
-  "path": "/api/projects/project-alpha/summary"
-};
+const LOOPBACK_BASE_URL_PATTERN = /^http:\/\/(?:(127\.0\.0\.1|localhost):([1-9][0-9]{0,4})|\[::1\]:([1-9][0-9]{0,4}))\/?$/;
 
 function requiredEnv(name) {
   const value = process.env[name];
@@ -42,50 +12,175 @@ function requiredEnv(name) {
   return value;
 }
 
-async function actorGet(testCase, token) {
-  const response = await fetch(BASE_URL + testCase.path, {
+function validateLoopbackBaseUrl(baseUrl) {
+  if (typeof baseUrl !== 'string' || baseUrl.length === 0 || baseUrl !== baseUrl.trim()) {
+    throw new Error('BOQA-005 generated standalone test requires an exact loopback HTTP URL with an explicit port');
+  }
+
+  const match = LOOPBACK_BASE_URL_PATTERN.exec(baseUrl);
+  if (!match) {
+    throw new Error('BOQA-005 generated standalone test is restricted to http://127.0.0.1:<port>, http://localhost:<port>, or http://[::1]:<port>');
+  }
+
+  const portText = match[2] || match[3];
+  const port = Number(portText);
+  if (!Number.isSafeInteger(port) || port < 1 || port > 65535 || String(port) !== portText) {
+    throw new Error('BOQA-005 generated standalone loopback port must be canonical and between 1 and 65535');
+  }
+
+  const parsed = new URL(baseUrl);
+  if (
+    parsed.protocol !== 'http:'
+    || parsed.username !== ''
+    || parsed.password !== ''
+    || parsed.pathname !== '/'
+    || parsed.search !== ''
+    || parsed.hash !== ''
+  ) {
+    throw new Error('BOQA-005 generated standalone base URL contains a prohibited URL component');
+  }
+
+  return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+}
+
+const BASE_URL = validateLoopbackBaseUrl(requiredEnv('BOUNDARY_BASE_URL'));
+const ACTOR_A_TOKEN = requiredEnv('BOQA_ACTOR_A_TOKEN');
+const ACTOR_B_TOKEN = requiredEnv('BOQA_ACTOR_B_TOKEN');
+const ACTORS = {
+  "actor_a": {
+    "id": "actor_a",
+    "tenant_label": "Tenant A",
+    "user_label": "Usuario A",
+    "tenant_id": "tenant-a",
+    "user_id": "user-a",
+    "account_id": "7",
+    "invoice_id": "481",
+    "marker": "BOQA_TENANT_A_7F39",
+    "token_env": "BOQA_ACTOR_A_TOKEN"
+  },
+  "actor_b": {
+    "id": "actor_b",
+    "tenant_label": "Tenant B",
+    "user_label": "Usuario B",
+    "tenant_id": "tenant-b",
+    "user_id": "user-b",
+    "account_id": "9",
+    "invoice_id": "902",
+    "marker": "BOQA_TENANT_B_3C21",
+    "token_env": "BOQA_ACTOR_B_TOKEN"
+  }
+};
+const CASES = [
+  {
+    "id": "source-original",
+    "route_id": "original",
+    "method": "GET",
+    "path_for_actor_a_resource": "/api/invoices/481",
+    "path_for_actor_b_resource": "/api/invoices/902"
+  },
+  {
+    "id": "variant-v2",
+    "route_id": "v2",
+    "method": "GET",
+    "path_for_actor_a_resource": "/api/v2/invoices/481",
+    "path_for_actor_b_resource": "/api/v2/invoices/902"
+  },
+  {
+    "id": "variant-export",
+    "route_id": "export",
+    "method": "GET",
+    "path_for_actor_a_resource": "/api/invoices/481/export",
+    "path_for_actor_b_resource": "/api/invoices/902/export"
+  },
+  {
+    "id": "variant-nested",
+    "route_id": "nested",
+    "method": "GET",
+    "path_for_actor_a_resource": "/api/accounts/7/invoices/481",
+    "path_for_actor_b_resource": "/api/accounts/9/invoices/902"
+  },
+  {
+    "id": "variant-query",
+    "route_id": "query",
+    "method": "GET",
+    "path_for_actor_a_resource": "/api/invoices?id=481",
+    "path_for_actor_b_resource": "/api/invoices?id=902"
+  }
+];
+const VERDICTS = Object.freeze({
+  CONTRADICTED: 'CONTRADICTED',
+  NOT_CONTRADICTED: 'NOT_CONTRADICTED_IN_TESTED_SCOPE',
+  UNPROVEN: 'UNPROVEN',
+  INVALID: 'INVALID_EXPERIMENT',
+});
+
+async function actorRequest(testCase, actor, target, token, role) {
+  const requestPath = target === 'actor_a' ? testCase.path_for_actor_a_resource : testCase.path_for_actor_b_resource;
+  const response = await fetch(BASE_URL + requestPath, {
     method: testCase.method,
     headers: { authorization: 'Bearer ' + token, accept: 'application/json' },
     redirect: 'error',
     signal: AbortSignal.timeout(5000),
   });
   const raw = await response.text();
-  let body = null;
-  try { body = JSON.parse(raw); } catch { body = null; }
-  return { status: response.status, body };
+  let semantic = null;
+  try { semantic = JSON.parse(raw); } catch { semantic = null; }
+  return { actor, target, role, status: response.status, semantic };
 }
 
-function exposesPrivateOwnerResource(result) {
-  return Boolean(
-    result.body
-    && result.body.kind === PRIVATE_KIND
-    && result.body.marker === PRIVATE_MARKER
-    && result.body.owner_id === EXPECTED_OWNER
-  );
+function exactInvoice(receipt, expected) {
+  const value = receipt && receipt.semantic;
+  return Boolean(receipt && receipt.status === 200 && value
+    && value.kind === 'private_invoice'
+    && value.tenant_id === expected.tenant_id
+    && value.user_id === expected.user_id
+    && value.account_id === expected.account_id
+    && (value.invoice_id === expected.invoice_id || value.resource_id === expected.invoice_id)
+    && value.marker === expected.marker);
 }
 
-for (const testCase of PROTECTED_CASES) {
-  test('owner control proves private authority: ' + testCase.id, async () => {
-    const owner = await actorGet(testCase, OWNER_TOKEN);
-    assert.equal(owner.status, 200);
-    assert.equal(exposesPrivateOwnerResource(owner), true);
+function hasValue(value) {
+  if (value === null || value === undefined || value === '') return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') return Object.keys(value).length > 0;
+  return true;
+}
+
+function prohibitedSignals(receipt, expected) {
+  const value = receipt && receipt.semantic;
+  if (!value || typeof value !== 'object') return [];
+  const signals = [];
+  if (value.marker === expected.marker) signals.push('owner_marker');
+  if (value.invoice_id === expected.invoice_id || value.resource_id === expected.invoice_id) signals.push('invoice_or_resource_id');
+  if (value.tenant_id === expected.tenant_id) signals.push('tenant_id');
+  if (hasValue(value.sensitive_field) || hasValue(value.sensitive_fields)) signals.push('sensitive_field');
+  if (hasValue(value.operational_capability) || hasValue(value.capabilities)) signals.push('operational_capability');
+  if (hasValue(value.prohibited_metadata)) signals.push('prohibited_metadata');
+  return signals;
+}
+
+function evaluate(receipts) {
+  if (!exactInvoice(receipts.actor_a_own, ACTORS.actor_a) || !exactInvoice(receipts.actor_b_own, ACTORS.actor_b)) {
+    return VERDICTS.INVALID;
+  }
+  if (prohibitedSignals(receipts.actor_a_cross, ACTORS.actor_b).length > 0
+      || prohibitedSignals(receipts.actor_b_cross, ACTORS.actor_a).length > 0) {
+    return VERDICTS.CONTRADICTED;
+  }
+  const definitive = (receipt) => receipt && [401, 403, 404].includes(receipt.status);
+  if (definitive(receipts.actor_a_cross) && definitive(receipts.actor_b_cross)) return VERDICTS.NOT_CONTRADICTED;
+  return VERDICTS.UNPROVEN;
+}
+
+for (const testCase of CASES) {
+  test('tenant boundary remains protected: ' + testCase.route_id, async () => {
+    const [actorAOwn, actorBOwn, actorACross, actorBCross] = await Promise.all([
+      actorRequest(testCase, 'actor_a', 'actor_a', ACTOR_A_TOKEN, 'owner_control'),
+      actorRequest(testCase, 'actor_b', 'actor_b', ACTOR_B_TOKEN, 'owner_control'),
+      actorRequest(testCase, 'actor_a', 'actor_b', ACTOR_A_TOKEN, 'cross_tenant_probe'),
+      actorRequest(testCase, 'actor_b', 'actor_a', ACTOR_B_TOKEN, 'cross_tenant_probe'),
+    ]);
+    const verdict = evaluate({ actor_a_own: actorAOwn, actor_b_own: actorBOwn, actor_a_cross: actorACross, actor_b_cross: actorBCross });
+    assert.equal(verdict, VERDICTS.NOT_CONTRADICTED, 'route did not prove the fixed tenant boundary');
   });
-
-  test('outsider cannot cross boundary: ' + testCase.id, async () => {
-    const outsider = await actorGet(testCase, OUTSIDER_TOKEN);
-    assert.equal(
-      exposesPrivateOwnerResource(outsider),
-      false,
-      'outsider received the same semantic private resource as the owner control'
-    );
-  });
 }
-
-test('public route remains a negative control', async () => {
-  const owner = await actorGet(PUBLIC_CONTROL, OWNER_TOKEN);
-  const outsider = await actorGet(PUBLIC_CONTROL, OUTSIDER_TOKEN);
-  assert.equal(owner.status, 200);
-  assert.equal(outsider.status, 200);
-  assert.equal(exposesPrivateOwnerResource(owner), false);
-  assert.equal(exposesPrivateOwnerResource(outsider), false);
-});

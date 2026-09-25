@@ -1,52 +1,7 @@
-schema: "boqa.boundary.contract.v1"
 finding:
-  id: "finding-project-object-owner-bypass"
-  category: "object_level_authorization"
-  method: "GET"
-  original_route_template: "/api/projects/:projectId"
-  authority_boundary: "project_owner"
-  resource_type: "project"
-  resource_parameter: "projectId"
-discovery:
-  route_graph_sha256: "244b20b7826b4b06e5a6b039bfa966a9dc4ba434c79e38a8afbea97cba38cec5"
-  related_variant_count: 2
-  relation_required: "shared_authority_boundary"
-actors:
-  owner:
-    credential_env: "BOUNDARY_OWNER_TOKEN"
-    purpose: "positive_private_control"
-  outsider:
-    credential_env: "BOUNDARY_OUTSIDER_TOKEN"
-    purpose: "negative_authority_control"
-invariant:
-  categorical_rule: "outsider_must_not_receive_same_semantic_private_resource_as_owner"
-  status_only_is_proof: false
-  required_private_kind: "private_project_resource"
-protected_cases:
-  - id: "seed-project-read"
-    source: "known_finding"
-    method: "GET"
-    path: "/api/projects/project-alpha"
-    route_template: "/api/projects/:projectId"
-    operation: "read"
-  - id: "variant-project-audit"
-    source: "inferred_related_variant"
-    method: "GET"
-    path: "/api/projects/project-alpha/audit"
-    route_template: "/api/projects/:projectId/audit"
-    operation: "audit"
-  - id: "variant-project-export"
-    source: "inferred_related_variant"
-    method: "GET"
-    path: "/api/projects/project-alpha/export"
-    route_template: "/api/projects/:projectId/export"
-    operation: "export"
-public_control:
-  id: "control-project-summary"
-  method: "GET"
-  path: "/api/projects/project-alpha/summary"
-  route_template: "/api/projects/:projectId/summary"
-expected_outputs:
-  - "boundary-contract.yaml"
-  - "boundary-regression.spec.ts"
-  - "evidence.json"
+  path: "/api/invoices/481"
+resource:
+  id: "481"
+expected_owner: "actor_a"
+prohibited_actor: "actor_b"
+private_marker: "BOQA_TENANT_A_7F39"

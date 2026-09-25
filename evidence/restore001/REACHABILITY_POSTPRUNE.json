@@ -1,0 +1,211 @@
+{
+  "schema": "boqa.restore001.reachability.postprune.v2",
+  "roots": [
+    "agent/instrumentation.js",
+    "agent/playwright-runner.js",
+    "dashboard/app.js",
+    "dashboard/cobros.js",
+    "dashboard/dashboard-state.js",
+    "deterministic-replay-engine.js",
+    "qualification/labs/juice-shop-v1/control-server.js",
+    "replay-manifest-builder.js",
+    "replay-security-guard.js",
+    "replay-verification-engine.js",
+    "scripts/browser-smoke-public-edge-v2.js",
+    "scripts/browser-smoke-v1.js",
+    "scripts/cloudflare-preview-smoke-v6.js",
+    "scripts/gate-status.js",
+    "scripts/local-lab.js",
+    "scripts/run-all-tests.js",
+    "scripts/soak-driver.js",
+    "scripts/soak-test.js",
+    "server.js",
+    "spike/boundary-proof/compile-boundary.js",
+    "spike/boundary-proof/test/boundary-proof.test.js",
+    "test/test-billing-private-v1.js",
+    "test/test-browser-scope-guard.js",
+    "test/test-cloudflare-asset-routing.js",
+    "test/test-dashboard-smoke.js",
+    "test/test-dashboard-state.js",
+    "test/test-defensive-private.js",
+    "test/test-hunter-runtime-v1.js",
+    "test/test-local-lab-docker.js",
+    "test/test-local-lab-runtime.js",
+    "test/test-public-private-boundary.js",
+    "test/test-replay-kernel.js",
+    "test/test-soak-qualification-helpers.js",
+    "test/test-worker-dashboard-contract.js",
+    "universal-session-recorder.js",
+    "worker.js"
+  ],
+  "counts": {
+    "REACHABLE_SUPPORTED": 45,
+    "TEST_ONLY": 14
+  },
+  "classifications": {
+    "agent/instrumentation.js": "REACHABLE_SUPPORTED",
+    "agent/playwright-runner.js": "REACHABLE_SUPPORTED",
+    "bus.js": "REACHABLE_SUPPORTED",
+    "dashboard/app.js": "REACHABLE_SUPPORTED",
+    "dashboard/cobros.js": "REACHABLE_SUPPORTED",
+    "dashboard/dashboard-state.js": "REACHABLE_SUPPORTED",
+    "deterministic-replay-engine.js": "REACHABLE_SUPPORTED",
+    "lib/billing-auth.js": "REACHABLE_SUPPORTED",
+    "lib/config.js": "REACHABLE_SUPPORTED",
+    "lib/defensive-validation.js": "REACHABLE_SUPPORTED",
+    "lib/health.js": "REACHABLE_SUPPORTED",
+    "lib/hunter-runtime.js": "REACHABLE_SUPPORTED",
+    "lib/local-lab-runtime.js": "REACHABLE_SUPPORTED",
+    "lib/middleware.js": "REACHABLE_SUPPORTED",
+    "lib/soak-qualification-helpers.js": "REACHABLE_SUPPORTED",
+    "qualification/labs/juice-shop-v1/control-server.js": "REACHABLE_SUPPORTED",
+    "replay-manifest-builder.js": "REACHABLE_SUPPORTED",
+    "replay-security-guard.js": "REACHABLE_SUPPORTED",
+    "replay-verification-engine.js": "REACHABLE_SUPPORTED",
+    "routes/hunter-v1.js": "REACHABLE_SUPPORTED",
+    "scripts/browser-smoke-public-edge-v2.js": "REACHABLE_SUPPORTED",
+    "scripts/browser-smoke-v1.js": "REACHABLE_SUPPORTED",
+    "scripts/cloudflare-preview-smoke-v6.js": "REACHABLE_SUPPORTED",
+    "scripts/gate-status.js": "REACHABLE_SUPPORTED",
+    "scripts/local-lab.js": "REACHABLE_SUPPORTED",
+    "scripts/run-all-tests.js": "REACHABLE_SUPPORTED",
+    "scripts/soak-driver.js": "REACHABLE_SUPPORTED",
+    "scripts/soak-test.js": "REACHABLE_SUPPORTED",
+    "server.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/boundary-oracle.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/compile-boundary.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/destination-boundary.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/exporters/contract.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/exporters/evidence.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/exporters/playwright-test.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/finding-loader.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/lab/fixed-routes.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/lab/fixtures.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/lab/server.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/lab/vulnerable-routes.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/route-graph.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/test/boundary-proof.test.js": "TEST_ONLY",
+    "spike/boundary-proof/two-actor-executor.js": "REACHABLE_SUPPORTED",
+    "spike/boundary-proof/variant-generator.js": "REACHABLE_SUPPORTED",
+    "test/test-billing-private-v1.js": "TEST_ONLY",
+    "test/test-browser-scope-guard.js": "TEST_ONLY",
+    "test/test-cloudflare-asset-routing.js": "TEST_ONLY",
+    "test/test-dashboard-smoke.js": "TEST_ONLY",
+    "test/test-dashboard-state.js": "TEST_ONLY",
+    "test/test-defensive-private.js": "TEST_ONLY",
+    "test/test-hunter-runtime-v1.js": "TEST_ONLY",
+    "test/test-local-lab-docker.js": "TEST_ONLY",
+    "test/test-local-lab-runtime.js": "TEST_ONLY",
+    "test/test-public-private-boundary.js": "TEST_ONLY",
+    "test/test-replay-kernel.js": "TEST_ONLY",
+    "test/test-soak-qualification-helpers.js": "TEST_ONLY",
+    "test/test-worker-dashboard-contract.js": "TEST_ONLY",
+    "universal-session-recorder.js": "REACHABLE_SUPPORTED",
+    "worker.js": "REACHABLE_SUPPORTED"
+  },
+  "edges": {
+    "server.js": [
+      "bus.js",
+      "lib/billing-auth.js",
+      "lib/config.js",
+      "lib/defensive-validation.js",
+      "lib/health.js",
+      "lib/hunter-runtime.js",
+      "lib/middleware.js",
+      "routes/hunter-v1.js"
+    ],
+    "test/test-local-lab-runtime.js": [
+      "lib/local-lab-runtime.js"
+    ],
+    "test/test-local-lab-docker.js": [
+      "lib/soak-qualification-helpers.js"
+    ],
+    "test/test-soak-qualification-helpers.js": [
+      "lib/soak-qualification-helpers.js"
+    ],
+    "test/test-dashboard-state.js": [
+      "dashboard/dashboard-state.js"
+    ],
+    "test/test-defensive-private.js": [
+      "lib/billing-auth.js",
+      "lib/defensive-validation.js"
+    ],
+    "test/test-billing-private-v1.js": [
+      "lib/billing-auth.js",
+      "lib/middleware.js"
+    ],
+    "test/test-hunter-runtime-v1.js": [
+      "lib/health.js",
+      "lib/hunter-runtime.js",
+      "routes/hunter-v1.js"
+    ],
+    "test/test-browser-scope-guard.js": [
+      "agent/playwright-runner.js"
+    ],
+    "test/test-replay-kernel.js": [
+      "deterministic-replay-engine.js",
+      "replay-security-guard.js",
+      "universal-session-recorder.js"
+    ],
+    "scripts/soak-driver.js": [
+      "lib/local-lab-runtime.js",
+      "lib/soak-qualification-helpers.js"
+    ],
+    "scripts/local-lab.js": [
+      "lib/local-lab-runtime.js"
+    ],
+    "scripts/soak-test.js": [
+      "lib/soak-qualification-helpers.js"
+    ],
+    "spike/boundary-proof/variant-generator.js": [
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/route-graph.js"
+    ],
+    "spike/boundary-proof/route-graph.js": [
+      "spike/boundary-proof/destination-boundary.js"
+    ],
+    "spike/boundary-proof/compile-boundary.js": [
+      "spike/boundary-proof/boundary-oracle.js",
+      "spike/boundary-proof/destination-boundary.js",
+      "spike/boundary-proof/exporters/contract.js",
+      "spike/boundary-proof/exporters/evidence.js",
+      "spike/boundary-proof/exporters/playwright-test.js",
+      "spike/boundary-proof/finding-loader.js",
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/route-graph.js",
+      "spike/boundary-proof/two-actor-executor.js",
+      "spike/boundary-proof/variant-generator.js"
+    ],
+    "spike/boundary-proof/two-actor-executor.js": [
+      "spike/boundary-proof/destination-boundary.js"
+    ],
+    "spike/boundary-proof/test/boundary-proof.test.js": [
+      "spike/boundary-proof/boundary-oracle.js",
+      "spike/boundary-proof/compile-boundary.js",
+      "spike/boundary-proof/destination-boundary.js",
+      "spike/boundary-proof/exporters/playwright-test.js",
+      "spike/boundary-proof/finding-loader.js",
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/lab/server.js",
+      "spike/boundary-proof/route-graph.js",
+      "spike/boundary-proof/two-actor-executor.js"
+    ],
+    "spike/boundary-proof/exporters/evidence.js": [
+      "spike/boundary-proof/route-graph.js"
+    ],
+    "spike/boundary-proof/lab/server.js": [
+      "spike/boundary-proof/lab/fixed-routes.js",
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/lab/vulnerable-routes.js"
+    ],
+    "lib/defensive-validation.js": [
+      "lib/local-lab-runtime.js"
+    ]
+  },
+  "config_edges": {
+    "compose.lab.yaml": [
+      "scripts/soak-driver.js",
+      "qualification/labs/juice-shop-v1/control-server.js"
+    ]
+  }
+}

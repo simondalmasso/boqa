@@ -1,0 +1,14 @@
+{
+  "schema": "boqa.restore001.canon-reconciliation.v1",
+  "pr40_base": "34626bb2ee3f770babaf9ec2a7997f04872733cc",
+  "v4_patch_sha256": "e144a17df03c1caf408920cd8a959e5c1f878624c116d0ed61556eebd227c1ef",
+  "v4_evidence_sha256": "1c9339b5d6d0903dd033cddfce1455c7f3cef95a210c67e795fd0f75da21afe1",
+  "v4_bundle_sha256": "f1ca789637b52035b30f5a7a2ee007dd3e1f9941bc555e50dc1f6351b0764371",
+  "v4_tests": "20_PASS_0_FAIL",
+  "boqa006_bundle_sha256": "d133ec0058542da4b14d23d287eabd5135cb51c483e7060ae3b2c2cd8bc4624c",
+  "boqa006_tests": "4_PASS_0_FAIL",
+  "boqa006_case_A": "REPRODUCED",
+  "boqa006_case_B": "NOT_REPRODUCED",
+  "boqa006_case_C": "AMBIGUOUS",
+  "artifact_recovery_gate": "PASS"
+}

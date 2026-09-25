@@ -53,7 +53,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           trap 'node scripts/gate-status.js syntax FAIL' ERR
-          node --check server.js lib/*.js routes/*.js scripts/*.js agent.js
+          node --check server.js lib/*.js routes/*.js scripts/*.js agent/*.js
           node scripts/gate-status.js syntax PASS
 
       - name: Focused production-helper tests

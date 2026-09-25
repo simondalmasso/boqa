@@ -1,0 +1,1760 @@
+{
+  "schema": "boqa.restore001.reachability.v1",
+  "base": "34626bb2ee3f770babaf9ec2a7997f04872733cc",
+  "supported_roots": [
+    "agent/instrumentation.js",
+    "agent/playwright-runner.js",
+    "dashboard/app.js",
+    "dashboard/cobros.js",
+    "dashboard/dashboard-state.js",
+    "deterministic-replay-engine.js",
+    "qualification/labs/juice-shop-v1/control-server.js",
+    "replay-manifest-builder.js",
+    "replay-security-guard.js",
+    "replay-verification-engine.js",
+    "scripts/browser-smoke-public-edge-v2.js",
+    "scripts/browser-smoke-v1.js",
+    "scripts/cloudflare-preview-smoke-v6.js",
+    "scripts/gate-status.js",
+    "scripts/local-lab.js",
+    "scripts/run-all-tests.js",
+    "scripts/soak-test.js",
+    "server.js",
+    "spike/boundary-proof/compile-boundary.js",
+    "spike/boundary-proof/test/boundary-proof.test.js",
+    "test/test-billing-private-v1.js",
+    "test/test-browser-scope-guard.js",
+    "test/test-cloudflare-asset-routing.js",
+    "test/test-dashboard-smoke.js",
+    "test/test-dashboard-state.js",
+    "test/test-defensive-private.js",
+    "test/test-hunter-runtime-v1.js",
+    "test/test-local-lab-docker.js",
+    "test/test-local-lab-runtime.js",
+    "test/test-public-private-boundary.js",
+    "test/test-replay-kernel.js",
+    "test/test-soak-qualification-helpers.js",
+    "test/test-worker-dashboard-contract.js",
+    "universal-session-recorder.js",
+    "worker.js"
+  ],
+  "counts": {
+    "DUPLICATE": 3,
+    "REACHABLE_SUPPORTED": 44,
+    "SUPERSEDED": 124,
+    "LEGACY_COMPAT_REQUIRED": 1,
+    "TEST_ONLY": 14
+  },
+  "dynamic_require_modules": [
+    "scripts/recover-truncated.js",
+    "spike/boundary-proof/test/boundary-proof.test.js",
+    "test/test-p5-final-smoke.js",
+    "test/test-smoke-combined.js",
+    "test/test-v09.js"
+  ],
+  "classifications": {
+    "agent.js": {
+      "class": "DUPLICATE",
+      "reason": "superseded_by agent/playwright-runner.js + agent/instrumentation.js; monolithic duplicate"
+    },
+    "agent/event-bus.js": {
+      "class": "DUPLICATE",
+      "reason": "superseded_by bus.js; duplicate event-bus implementation"
+    },
+    "agent/instrumentation.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "agent/playwright-runner.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "anomaly.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "asset-mapper.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "attack-surface-modeler.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "automatic-replay-confirmation.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "autonomy-governor.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "baseline.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "bounty-estimator.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "budget-optimizer.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "bus.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "campaign-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "campaign-forecaster.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "canonical-bug-store.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "capital-allocator-sim.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "ci/runner.js": {
+      "class": "SUPERSEDED",
+      "reason": "only package consumer is historical npm ci mode; ci/config.json contains implicit external Ripio target forbidden by LOG57"
+    },
+    "compare.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "confidence-calibrator.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "correlation-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "counterfactual-validator.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "coverage-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "coverage-planner.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "dashboard/app.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "dashboard/cobros.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "dashboard/dashboard-state.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "decision-policy-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "decision-stability-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "dedup.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "deterministic-replay-engine.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "disclosure-pipeline.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "disclosure.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "discovery-loop-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "economic-value-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "efficiency-tracker.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "evidence-package-generator.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "evidence-quality-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "evidence.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "executive-reporting.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "exploration-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "false-positive-reducer.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "feedback-loop.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "finder.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "finding-confidence-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "finding-memory.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "forecast-dashboard.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "functions/api/[[path]].js": {
+      "class": "DUPLICATE",
+      "reason": "superseded_by worker.js edge proxy; wrangler main is worker.js"
+    },
+    "hypothesis-generator.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "hypothesis-prioritizer.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "knowledge-base.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "knowledge-graph-integration.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "learning-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "lib/billing-auth.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "lib/config.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "lib/defensive-validation.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "lib/event-wiring.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "lib/health.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "lib/hunter-runtime.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "lib/init.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "lib/local-lab-runtime.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "lib/middleware.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "lib/pipelines.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "lib/replay-contracts.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "lib/runtime-monitor.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "lib/shutdown.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "lib/soak-qualification-helpers.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "live-decision-runner.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "memory-graph.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "opportunity-comparator.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "optimizer-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "permission.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "persistence.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "prediction-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "priority-shaper.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "qualification/labs/juice-shop-v1/control-server.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "ranking.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "real-bug-detector.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "reality-alignment-layer.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "replay-farm.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "replay-manifest-builder.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "replay-security-guard.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "replay-verification-engine.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "replay.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "reportability-engine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "reproduction.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "resource-manager.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "resource-optimizer.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "risk-forecast.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "risk.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "routes/hunter-v1.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "routes/quality-v1.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/s6.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v01.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v08.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v09.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v11.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v12.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v13.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v14.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "routes/v15.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scan-scheduler.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "scenario-library.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "scheduler-multi-target.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "scheduler.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "scripts/browser-smoke-public-edge-v2.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "scripts/browser-smoke-v1.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "scripts/cloudflare-preview-smoke-v6.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "scripts/deployment-readiness.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scripts/gate-status.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "scripts/local-lab.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "scripts/migrate-canonical-bugs.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scripts/patch-tests-paths.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scripts/recover-truncated.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scripts/run-all-tests.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "scripts/run-from-root.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scripts/run-single-test.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scripts/soak-driver.js": {
+      "class": "LEGACY_COMPAT_REQUIRED",
+      "reason": "compose.lab.yaml driver command references this script by path; config-level reachability"
+    },
+    "scripts/soak-test.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "scripts/stub-truncated.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "scripts/syntax-check.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical route/maintenance/runtime layer outside current protected product contract"
+    },
+    "server.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/boundary-oracle.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/compile-boundary.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/destination-boundary.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/exporters/contract.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/exporters/evidence.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/exporters/playwright-test.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/finding-loader.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/lab/fixed-routes.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/lab/fixtures.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/lab/server.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/lab/vulnerable-routes.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/route-graph.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/test/boundary-proof.test.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/two-actor-executor.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "spike/boundary-proof/variant-generator.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "state-diff.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "target-brain.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "target-manager.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "target-registry.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "target-runner.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "test/test-billing-private-v1.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-browser-scope-guard.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-cloudflare-asset-routing.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-dashboard-smoke.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-dashboard-state.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-defensive-private.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-gate-fixes.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-hunter-runtime-v1.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-local-lab-docker.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-local-lab-runtime.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-p41-legacy-modules.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p410-golden-regression.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p42-degraded-mode.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p43-persistence-isolation.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p44-api-regression.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p45-event-bus.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p46-concurrency.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p47-memory-leaks.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p48-long-running.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p49-security-regression.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p5-final-smoke.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-p5-replay-time-machine.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-public-private-boundary.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-quality-v1.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-real-migration.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-replay-kernel.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-smoke-combined.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-soak-qualification-helpers.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "test/test-v09.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-v11.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-v12.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-v13.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-v14.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical-version test for removed runtime surface; replaced by focused kernel characterization"
+    },
+    "test/test-worker-dashboard-contract.js": {
+      "class": "TEST_ONLY",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "time-machine-index.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "uncertainty-governor.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "universal-session-recorder.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "validator.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "verification-farm.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "verification.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "worker-pool.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "worker.js": {
+      "class": "REACHABLE_SUPPORTED",
+      "reason": "transitive closure from supported runtime/test entrypoint"
+    },
+    "workflow.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    },
+    "yield-forecast.js": {
+      "class": "SUPERSEDED",
+      "reason": "historical root engine outside supported closure after direct lean composition"
+    }
+  },
+  "edges": {
+    "agent.js": [
+      "anomaly.js",
+      "finder.js"
+    ],
+    "ci/runner.js": [
+      "agent.js",
+      "anomaly.js",
+      "baseline.js",
+      "bus.js",
+      "compare.js",
+      "replay.js"
+    ],
+    "discovery-loop-engine.js": [
+      "attack-surface-modeler.js",
+      "confidence-calibrator.js",
+      "hypothesis-generator.js",
+      "memory-graph.js"
+    ],
+    "lib/defensive-validation.js": [
+      "lib/local-lab-runtime.js"
+    ],
+    "lib/init.js": [
+      "agent.js",
+      "anomaly.js",
+      "asset-mapper.js",
+      "attack-surface-modeler.js",
+      "automatic-replay-confirmation.js",
+      "autonomy-governor.js",
+      "baseline.js",
+      "budget-optimizer.js",
+      "bus.js",
+      "campaign-engine.js",
+      "campaign-forecaster.js",
+      "capital-allocator-sim.js",
+      "compare.js",
+      "confidence-calibrator.js",
+      "correlation-engine.js",
+      "counterfactual-validator.js",
+      "coverage-engine.js",
+      "coverage-planner.js",
+      "decision-policy-engine.js",
+      "decision-stability-engine.js",
+      "dedup.js",
+      "deterministic-replay-engine.js",
+      "disclosure-pipeline.js",
+      "disclosure.js",
+      "discovery-loop-engine.js",
+      "economic-value-engine.js",
+      "efficiency-tracker.js",
+      "evidence-package-generator.js",
+      "evidence-quality-engine.js",
+      "evidence.js",
+      "executive-reporting.js",
+      "exploration-engine.js",
+      "false-positive-reducer.js",
+      "feedback-loop.js",
+      "finder.js",
+      "finding-confidence-engine.js",
+      "finding-memory.js",
+      "forecast-dashboard.js",
+      "hypothesis-generator.js",
+      "hypothesis-prioritizer.js",
+      "knowledge-base.js",
+      "knowledge-graph-integration.js",
+      "learning-engine.js",
+      "lib/runtime-monitor.js",
+      "live-decision-runner.js",
+      "memory-graph.js",
+      "opportunity-comparator.js",
+      "optimizer-engine.js",
+      "permission.js",
+      "prediction-engine.js",
+      "priority-shaper.js",
+      "ranking.js",
+      "real-bug-detector.js",
+      "reality-alignment-layer.js",
+      "replay-farm.js",
+      "replay-manifest-builder.js",
+      "replay-security-guard.js",
+      "replay-verification-engine.js",
+      "reproduction.js",
+      "resource-manager.js",
+      "resource-optimizer.js",
+      "risk-forecast.js",
+      "risk.js",
+      "scan-scheduler.js",
+      "scenario-library.js",
+      "scheduler.js",
+      "state-diff.js",
+      "target-brain.js",
+      "target-manager.js",
+      "target-runner.js",
+      "time-machine-index.js",
+      "uncertainty-governor.js",
+      "universal-session-recorder.js",
+      "validator.js",
+      "verification-farm.js",
+      "verification.js",
+      "worker-pool.js",
+      "workflow.js",
+      "yield-forecast.js"
+    ],
+    "lib/shutdown.js": [
+      "lib/config.js"
+    ],
+    "persistence.js": [
+      "canonical-bug-store.js"
+    ],
+    "replay-farm.js": [
+      "deterministic-replay-engine.js"
+    ],
+    "routes/quality-v1.js": [
+      "bounty-estimator.js",
+      "canonical-bug-store.js",
+      "persistence.js",
+      "target-registry.js"
+    ],
+    "routes/s6.js": [
+      "target-runner.js"
+    ],
+    "routes/v01.js": [
+      "lib/config.js",
+      "lib/health.js"
+    ],
+    "routes/v15.js": [
+      "deterministic-replay-engine.js",
+      "lib/health.js"
+    ],
+    "scheduler-multi-target.js": [
+      "target-registry.js"
+    ],
+    "scripts/deployment-readiness.js": [
+      "lib/config.js"
+    ],
+    "scripts/local-lab.js": [
+      "lib/local-lab-runtime.js"
+    ],
+    "scripts/migrate-canonical-bugs.js": [
+      "bounty-estimator.js",
+      "canonical-bug-store.js",
+      "reportability-engine.js"
+    ],
+    "scripts/patch-tests-paths.js": [
+      "memory-graph.js"
+    ],
+    "scripts/soak-driver.js": [
+      "lib/local-lab-runtime.js",
+      "lib/soak-qualification-helpers.js"
+    ],
+    "scripts/soak-test.js": [
+      "lib/soak-qualification-helpers.js"
+    ],
+    "server.js": [
+      "bus.js",
+      "lib/billing-auth.js",
+      "lib/config.js",
+      "lib/defensive-validation.js",
+      "lib/health.js",
+      "lib/hunter-runtime.js",
+      "lib/middleware.js",
+      "routes/hunter-v1.js"
+    ],
+    "spike/boundary-proof/compile-boundary.js": [
+      "spike/boundary-proof/boundary-oracle.js",
+      "spike/boundary-proof/destination-boundary.js",
+      "spike/boundary-proof/exporters/contract.js",
+      "spike/boundary-proof/exporters/evidence.js",
+      "spike/boundary-proof/exporters/playwright-test.js",
+      "spike/boundary-proof/finding-loader.js",
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/route-graph.js",
+      "spike/boundary-proof/two-actor-executor.js",
+      "spike/boundary-proof/variant-generator.js"
+    ],
+    "spike/boundary-proof/exporters/evidence.js": [
+      "spike/boundary-proof/route-graph.js"
+    ],
+    "spike/boundary-proof/lab/server.js": [
+      "spike/boundary-proof/lab/fixed-routes.js",
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/lab/vulnerable-routes.js"
+    ],
+    "spike/boundary-proof/route-graph.js": [
+      "spike/boundary-proof/destination-boundary.js"
+    ],
+    "spike/boundary-proof/test/boundary-proof.test.js": [
+      "spike/boundary-proof/boundary-oracle.js",
+      "spike/boundary-proof/compile-boundary.js",
+      "spike/boundary-proof/destination-boundary.js",
+      "spike/boundary-proof/exporters/playwright-test.js",
+      "spike/boundary-proof/finding-loader.js",
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/lab/server.js",
+      "spike/boundary-proof/route-graph.js",
+      "spike/boundary-proof/two-actor-executor.js"
+    ],
+    "spike/boundary-proof/two-actor-executor.js": [
+      "spike/boundary-proof/destination-boundary.js"
+    ],
+    "spike/boundary-proof/variant-generator.js": [
+      "spike/boundary-proof/lab/fixtures.js",
+      "spike/boundary-proof/route-graph.js"
+    ],
+    "test/test-billing-private-v1.js": [
+      "lib/billing-auth.js",
+      "lib/middleware.js"
+    ],
+    "test/test-browser-scope-guard.js": [
+      "agent/playwright-runner.js"
+    ],
+    "test/test-dashboard-state.js": [
+      "dashboard/dashboard-state.js"
+    ],
+    "test/test-defensive-private.js": [
+      "lib/billing-auth.js",
+      "lib/defensive-validation.js"
+    ],
+    "test/test-gate-fixes.js": [
+      "bounty-estimator.js",
+      "canonical-bug-store.js",
+      "persistence.js",
+      "target-registry.js"
+    ],
+    "test/test-hunter-runtime-v1.js": [
+      "lib/health.js",
+      "lib/hunter-runtime.js",
+      "routes/hunter-v1.js"
+    ],
+    "test/test-local-lab-docker.js": [
+      "lib/soak-qualification-helpers.js"
+    ],
+    "test/test-local-lab-runtime.js": [
+      "lib/local-lab-runtime.js"
+    ],
+    "test/test-p41-legacy-modules.js": [
+      "baseline.js",
+      "evidence.js",
+      "finder.js",
+      "learning-engine.js",
+      "prediction-engine.js",
+      "state-diff.js",
+      "verification.js"
+    ],
+    "test/test-p410-golden-regression.js": [
+      "lib/config.js",
+      "lib/init.js",
+      "lib/middleware.js",
+      "lib/pipelines.js",
+      "routes/v01.js",
+      "routes/v08.js",
+      "routes/v09.js",
+      "routes/v11.js",
+      "routes/v12.js",
+      "routes/v13.js",
+      "routes/v14.js"
+    ],
+    "test/test-p42-degraded-mode.js": [
+      "bus.js",
+      "lib/health.js",
+      "lib/middleware.js"
+    ],
+    "test/test-p43-persistence-isolation.js": [
+      "anomaly.js",
+      "asset-mapper.js",
+      "baseline.js",
+      "bus.js",
+      "correlation-engine.js",
+      "coverage-engine.js",
+      "dedup.js",
+      "evidence.js",
+      "exploration-engine.js",
+      "finder.js",
+      "finding-memory.js",
+      "knowledge-base.js",
+      "lib/init.js",
+      "memory-graph.js",
+      "permission.js",
+      "prediction-engine.js",
+      "ranking.js",
+      "risk.js",
+      "scheduler.js",
+      "state-diff.js",
+      "target-manager.js",
+      "verification.js",
+      "worker-pool.js",
+      "workflow.js"
+    ],
+    "test/test-p44-api-regression.js": [
+      "lib/config.js",
+      "lib/init.js",
+      "lib/middleware.js",
+      "lib/pipelines.js",
+      "routes/v01.js",
+      "routes/v08.js",
+      "routes/v09.js",
+      "routes/v11.js",
+      "routes/v12.js",
+      "routes/v13.js",
+      "routes/v14.js"
+    ],
+    "test/test-p45-event-bus.js": [
+      "bus.js"
+    ],
+    "test/test-p46-concurrency.js": [
+      "bus.js",
+      "lib/config.js",
+      "lib/init.js",
+      "lib/middleware.js",
+      "lib/pipelines.js",
+      "routes/v01.js",
+      "routes/v08.js",
+      "routes/v09.js",
+      "routes/v11.js",
+      "routes/v12.js",
+      "routes/v13.js",
+      "routes/v14.js"
+    ],
+    "test/test-p47-memory-leaks.js": [
+      "anomaly.js",
+      "bus.js",
+      "correlation-engine.js",
+      "coverage-engine.js",
+      "dedup.js",
+      "evidence.js",
+      "finder.js",
+      "finding-memory.js",
+      "knowledge-base.js",
+      "memory-graph.js",
+      "risk.js",
+      "scheduler.js",
+      "target-manager.js",
+      "verification.js"
+    ],
+    "test/test-p48-long-running.js": [
+      "lib/config.js",
+      "lib/init.js",
+      "lib/middleware.js",
+      "lib/pipelines.js",
+      "routes/v01.js",
+      "routes/v08.js",
+      "routes/v09.js",
+      "routes/v11.js",
+      "routes/v12.js",
+      "routes/v13.js",
+      "routes/v14.js"
+    ],
+    "test/test-p49-security-regression.js": [
+      "autonomy-governor.js",
+      "lib/middleware.js"
+    ],
+    "test/test-p5-replay-time-machine.js": [
+      "deterministic-replay-engine.js",
+      "knowledge-base.js",
+      "replay-farm.js",
+      "replay-manifest-builder.js",
+      "replay-security-guard.js",
+      "replay-verification-engine.js",
+      "replay.js",
+      "reproduction.js",
+      "scenario-library.js",
+      "time-machine-index.js",
+      "universal-session-recorder.js"
+    ],
+    "test/test-quality-v1.js": [
+      "bounty-estimator.js",
+      "canonical-bug-store.js",
+      "persistence.js",
+      "reportability-engine.js",
+      "scheduler-multi-target.js",
+      "target-registry.js"
+    ],
+    "test/test-real-migration.js": [
+      "canonical-bug-store.js",
+      "scheduler-multi-target.js",
+      "target-registry.js"
+    ],
+    "test/test-replay-kernel.js": [
+      "deterministic-replay-engine.js",
+      "replay-security-guard.js",
+      "universal-session-recorder.js"
+    ],
+    "test/test-soak-qualification-helpers.js": [
+      "lib/soak-qualification-helpers.js"
+    ],
+    "test/test-v11.js": [
+      "attack-surface-modeler.js",
+      "confidence-calibrator.js",
+      "discovery-loop-engine.js",
+      "hypothesis-generator.js",
+      "memory-graph.js"
+    ],
+    "test/test-v12.js": [
+      "capital-allocator-sim.js",
+      "confidence-calibrator.js",
+      "decision-policy-engine.js",
+      "economic-value-engine.js",
+      "live-decision-runner.js",
+      "opportunity-comparator.js"
+    ],
+    "test/test-v13.js": [
+      "capital-allocator-sim.js",
+      "counterfactual-validator.js",
+      "decision-policy-engine.js",
+      "decision-stability-engine.js",
+      "economic-value-engine.js",
+      "reality-alignment-layer.js",
+      "uncertainty-governor.js"
+    ],
+    "test/test-v14.js": [
+      "autonomy-governor.js",
+      "confidence-calibrator.js",
+      "counterfactual-validator.js",
+      "decision-stability-engine.js",
+      "economic-value-engine.js",
+      "memory-graph.js",
+      "reality-alignment-layer.js",
+      "uncertainty-governor.js"
+    ],
+    "verification.js": [
+      "canonical-bug-store.js"
+    ]
+  },
+  "sinks": {
+    "finding-memory.js": [
+      "EVIDENCE"
+    ],
+    "correlation-engine.js": [
+      "EVIDENCE"
+    ],
+    "persistence.js": [
+      "PERSISTENCE"
+    ],
+    "replay-manifest-builder.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "reportability-engine.js": [
+      "EVIDENCE"
+    ],
+    "target-registry.js": [
+      "EVIDENCE"
+    ],
+    "disclosure.js": [
+      "EVIDENCE"
+    ],
+    "universal-session-recorder.js": [
+      "EVIDENCE"
+    ],
+    "risk-forecast.js": [
+      "EVIDENCE"
+    ],
+    "replay.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "finding-confidence-engine.js": [
+      "EVIDENCE"
+    ],
+    "canonical-bug-store.js": [
+      "EVIDENCE"
+    ],
+    "risk.js": [
+      "EVIDENCE"
+    ],
+    "coverage-planner.js": [
+      "EVIDENCE"
+    ],
+    "permission.js": [
+      "EVIDENCE"
+    ],
+    "executive-reporting.js": [
+      "EVIDENCE"
+    ],
+    "worker-pool.js": [
+      "BROWSER",
+      "PERSISTENCE"
+    ],
+    "deterministic-replay-engine.js": [
+      "EVIDENCE"
+    ],
+    "automatic-replay-confirmation.js": [
+      "EVIDENCE"
+    ],
+    "state-diff.js": [
+      "EVIDENCE"
+    ],
+    "server.js": [
+      "NETWORK_OR_BROWSER"
+    ],
+    "coverage-engine.js": [
+      "EVIDENCE"
+    ],
+    "agent.js": [
+      "NETWORK_OR_BROWSER",
+      "BROWSER"
+    ],
+    "workflow.js": [
+      "EVIDENCE"
+    ],
+    "yield-forecast.js": [
+      "EVIDENCE"
+    ],
+    "baseline.js": [
+      "EVIDENCE"
+    ],
+    "evidence.js": [
+      "EVIDENCE"
+    ],
+    "verification.js": [
+      "EVIDENCE"
+    ],
+    "learning-engine.js": [
+      "EVIDENCE"
+    ],
+    "real-bug-detector.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "verification-farm.js": [
+      "NETWORK_OR_BROWSER",
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "validator.js": [
+      "EVIDENCE"
+    ],
+    "bounty-estimator.js": [
+      "EVIDENCE"
+    ],
+    "time-machine-index.js": [
+      "EVIDENCE"
+    ],
+    "target-runner.js": [
+      "EVIDENCE"
+    ],
+    "efficiency-tracker.js": [
+      "EVIDENCE"
+    ],
+    "reproduction.js": [
+      "EVIDENCE"
+    ],
+    "bus.js": [
+      "BROWSER",
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "worker.js": [
+      "NETWORK_OR_BROWSER",
+      "EVIDENCE"
+    ],
+    "ranking.js": [
+      "EVIDENCE"
+    ],
+    "false-positive-reducer.js": [
+      "EVIDENCE"
+    ],
+    "discovery-loop-engine.js": [
+      "EVIDENCE"
+    ],
+    "dedup.js": [
+      "EVIDENCE"
+    ],
+    "asset-mapper.js": [
+      "BROWSER"
+    ],
+    "replay-security-guard.js": [
+      "EVIDENCE"
+    ],
+    "exploration-engine.js": [
+      "BROWSER"
+    ],
+    "memory-graph.js": [
+      "EVIDENCE"
+    ],
+    "knowledge-base.js": [
+      "EVIDENCE"
+    ],
+    "finder.js": [
+      "EVIDENCE"
+    ],
+    "knowledge-graph-integration.js": [
+      "EVIDENCE"
+    ],
+    "evidence-package-generator.js": [
+      "EVIDENCE"
+    ],
+    "replay-farm.js": [
+      "EVIDENCE"
+    ],
+    "replay-verification-engine.js": [
+      "EVIDENCE"
+    ],
+    "hypothesis-prioritizer.js": [
+      "EVIDENCE"
+    ],
+    "disclosure-pipeline.js": [
+      "EVIDENCE"
+    ],
+    "evidence-quality-engine.js": [
+      "EVIDENCE"
+    ],
+    "feedback-loop.js": [
+      "EVIDENCE"
+    ],
+    "hypothesis-generator.js": [
+      "EVIDENCE"
+    ],
+    "prediction-engine.js": [
+      "EVIDENCE"
+    ],
+    "test/test-public-private-boundary.js": [
+      "NETWORK_OR_BROWSER"
+    ],
+    "test/test-p43-persistence-isolation.js": [
+      "BROWSER",
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "test/test-p5-final-smoke.js": [
+      "NETWORK_OR_BROWSER",
+      "EVIDENCE"
+    ],
+    "test/test-local-lab-runtime.js": [
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "test/test-v11.js": [
+      "EVIDENCE"
+    ],
+    "test/test-local-lab-docker.js": [
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "test/test-soak-qualification-helpers.js": [
+      "EVIDENCE"
+    ],
+    "test/test-v13.js": [
+      "EVIDENCE"
+    ],
+    "test/test-p46-concurrency.js": [
+      "NETWORK_OR_BROWSER"
+    ],
+    "test/test-p47-memory-leaks.js": [
+      "EVIDENCE"
+    ],
+    "test/test-p410-golden-regression.js": [
+      "NETWORK_OR_BROWSER",
+      "EVIDENCE"
+    ],
+    "test/test-defensive-private.js": [
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "test/test-quality-v1.js": [
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "test/test-smoke-combined.js": [
+      "NETWORK_OR_BROWSER",
+      "EVIDENCE"
+    ],
+    "test/test-p5-replay-time-machine.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "test/test-billing-private-v1.js": [
+      "EVIDENCE"
+    ],
+    "test/test-p44-api-regression.js": [
+      "NETWORK_OR_BROWSER",
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "test/test-gate-fixes.js": [
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "test/test-p41-legacy-modules.js": [
+      "EVIDENCE"
+    ],
+    "test/test-p42-degraded-mode.js": [
+      "BROWSER"
+    ],
+    "test/test-real-migration.js": [
+      "EVIDENCE"
+    ],
+    "test/test-hunter-runtime-v1.js": [
+      "PERSISTENCE"
+    ],
+    "test/test-browser-scope-guard.js": [
+      "BROWSER"
+    ],
+    "test/test-cloudflare-asset-routing.js": [
+      "NETWORK_OR_BROWSER"
+    ],
+    "test/test-p45-event-bus.js": [
+      "EVIDENCE"
+    ],
+    "test/test-p48-long-running.js": [
+      "NETWORK_OR_BROWSER"
+    ],
+    "scripts/cloudflare-preview-smoke-v6.js": [
+      "NETWORK_OR_BROWSER",
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "scripts/soak-driver.js": [
+      "EVIDENCE"
+    ],
+    "scripts/local-lab.js": [
+      "EVIDENCE"
+    ],
+    "scripts/soak-test.js": [
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "scripts/browser-smoke-public-edge-v2.js": [
+      "NETWORK_OR_BROWSER",
+      "EVIDENCE"
+    ],
+    "scripts/deployment-readiness.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "scripts/migrate-canonical-bugs.js": [
+      "EVIDENCE"
+    ],
+    "scripts/browser-smoke-v1.js": [
+      "NETWORK_OR_BROWSER",
+      "BROWSER",
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "dashboard/cobros.js": [
+      "NETWORK_OR_BROWSER"
+    ],
+    "spike/boundary-proof/boundary-oracle.js": [
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/destination-boundary.js": [
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/route-graph.js": [
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/compile-boundary.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/two-actor-executor.js": [
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/test/boundary-proof.test.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/exporters/evidence.js": [
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/exporters/contract.js": [
+      "EVIDENCE"
+    ],
+    "spike/boundary-proof/exporters/playwright-test.js": [
+      "NETWORK_OR_BROWSER",
+      "EVIDENCE"
+    ],
+    "ci/runner.js": [
+      "BROWSER"
+    ],
+    "routes/v01.js": [
+      "EVIDENCE"
+    ],
+    "routes/v15.js": [
+      "EVIDENCE"
+    ],
+    "functions/api/[[path]].js": [
+      "NETWORK_OR_BROWSER"
+    ],
+    "qualification/labs/juice-shop-v1/control-server.js": [
+      "EVIDENCE"
+    ],
+    "lib/pipelines.js": [
+      "EVIDENCE"
+    ],
+    "lib/defensive-validation.js": [
+      "EVIDENCE"
+    ],
+    "lib/hunter-runtime.js": [
+      "EVIDENCE"
+    ],
+    "lib/replay-contracts.js": [
+      "EVIDENCE"
+    ],
+    "lib/middleware.js": [
+      "EVIDENCE"
+    ],
+    "lib/local-lab-runtime.js": [
+      "NETWORK_OR_BROWSER",
+      "PERSISTENCE",
+      "EVIDENCE"
+    ],
+    "lib/billing-auth.js": [
+      "EVIDENCE"
+    ],
+    "lib/shutdown.js": [
+      "BROWSER",
+      "EVIDENCE"
+    ],
+    "lib/soak-qualification-helpers.js": [
+      "EVIDENCE"
+    ],
+    "lib/init.js": [
+      "EVIDENCE"
+    ],
+    "agent/event-bus.js": [
+      "BROWSER"
+    ],
+    "agent/playwright-runner.js": [
+      "NETWORK_OR_BROWSER",
+      "BROWSER"
+    ],
+    "agent/instrumentation.js": [
+      "NETWORK_OR_BROWSER",
+      "BROWSER"
+    ]
+  },
+  "duplicate_clusters": [
+    {
+      "responsibility": "browser_executor",
+      "keep": [
+        "agent/playwright-runner.js",
+        "agent/instrumentation.js"
+      ],
+      "remove": [
+        "agent.js"
+      ]
+    },
+    {
+      "responsibility": "event_bus",
+      "keep": [
+        "bus.js"
+      ],
+      "remove": [
+        "agent/event-bus.js"
+      ]
+    },
+    {
+      "responsibility": "edge_proxy",
+      "keep": [
+        "worker.js"
+      ],
+      "remove": [
+        "functions/api/[[path]].js"
+      ]
+    },
+    {
+      "responsibility": "historical_api_generations",
+      "keep": [
+        "routes/hunter-v1.js"
+      ],
+      "remove": [
+        "routes/quality-v1.js",
+        "routes/v12.js",
+        "routes/s6.js",
+        "routes/v01.js",
+        "routes/v09.js",
+        "routes/v14.js",
+        "routes/v08.js",
+        "routes/v13.js",
+        "routes/v11.js",
+        "routes/v15.js"
+      ]
+    },
+    {
+      "responsibility": "historical_decision_discovery_engines",
+      "keep": [],
+      "remove": [
+        "finding-memory.js",
+        "correlation-engine.js",
+        "uncertainty-governor.js",
+        "persistence.js",
+        "reportability-engine.js",
+        "target-registry.js",
+        "disclosure.js",
+        "risk-forecast.js",
+        "replay.js",
+        "finding-confidence-engine.js",
+        "canonical-bug-store.js",
+        "risk.js",
+        "coverage-planner.js",
+        "permission.js",
+        "executive-reporting.js",
+        "worker-pool.js",
+        "anomaly.js",
+        "scan-scheduler.js",
+        "automatic-replay-confirmation.js",
+        "state-diff.js",
+        "compare.js",
+        "coverage-engine.js",
+        "scheduler.js",
+        "target-manager.js",
+        "scheduler-multi-target.js",
+        "campaign-forecaster.js",
+        "workflow.js",
+        "budget-optimizer.js",
+        "autonomy-governor.js",
+        "yield-forecast.js",
+        "attack-surface-modeler.js",
+        "decision-stability-engine.js",
+        "baseline.js",
+        "campaign-engine.js",
+        "evidence.js",
+        "verification.js",
+        "counterfactual-validator.js",
+        "learning-engine.js",
+        "real-bug-detector.js",
+        "scenario-library.js",
+        "verification-farm.js",
+        "validator.js",
+        "bounty-estimator.js",
+        "optimizer-engine.js",
+        "time-machine-index.js",
+        "decision-policy-engine.js",
+        "target-runner.js",
+        "efficiency-tracker.js",
+        "reproduction.js",
+        "confidence-calibrator.js",
+        "economic-value-engine.js",
+        "ranking.js",
+        "false-positive-reducer.js",
+        "live-decision-runner.js",
+        "discovery-loop-engine.js",
+        "dedup.js",
+        "opportunity-comparator.js",
+        "asset-mapper.js",
+        "priority-shaper.js",
+        "capital-allocator-sim.js",
+        "exploration-engine.js",
+        "resource-optimizer.js",
+        "memory-graph.js",
+        "knowledge-base.js",
+        "finder.js",
+        "knowledge-graph-integration.js",
+        "evidence-package-generator.js",
+        "reality-alignment-layer.js",
+        "resource-manager.js",
+        "replay-farm.js",
+        "hypothesis-prioritizer.js",
+        "disclosure-pipeline.js",
+        "target-brain.js",
+        "forecast-dashboard.js",
+        "evidence-quality-engine.js",
+        "feedback-loop.js",
+        "hypothesis-generator.js",
+        "prediction-engine.js"
+      ]
+    }
+  ]
+}

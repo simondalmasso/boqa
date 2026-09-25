@@ -38,7 +38,7 @@ const AUTH_PATTERNS = [
 
 // Auth-related cookie names
 const AUTH_COOKIES = new Set([
-  'ripio_access', 'sessionid', 'csrftoken',
+  'sessionid', 'csrftoken',
   'access_token', 'refresh_token', 'auth_token',
   'id_token', '_jwt', '_session',
 ]);
@@ -49,14 +49,56 @@ const AUTH_HEADERS = new Set([
   'x-access-token', 'x-refresh-token',
 ]);
 
+
+function validateTargetScope(target, allowedOrigins) {
+  if (typeof target !== 'string' || !target.trim()) {
+    const error = new Error('BROWSER_TARGET_REQUIRED');
+    error.code = 'BROWSER_TARGET_REQUIRED';
+    throw error;
+  }
+  if (!Array.isArray(allowedOrigins) || allowedOrigins.length === 0) {
+    const error = new Error('BROWSER_SCOPE_REQUIRED');
+    error.code = 'BROWSER_SCOPE_REQUIRED';
+    throw error;
+  }
+  let url;
+  try {
+    url = new URL(target);
+  } catch (_) {
+    const error = new Error('BROWSER_TARGET_INVALID');
+    error.code = 'BROWSER_TARGET_INVALID';
+    throw error;
+  }
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+    const error = new Error('BROWSER_TARGET_UNSAFE');
+    error.code = 'BROWSER_TARGET_UNSAFE';
+    throw error;
+  }
+  const normalized = new Set(allowedOrigins.map((origin) => {
+    try { return new URL(origin).origin; } catch (_) { return null; }
+  }).filter(Boolean));
+  if (!normalized.has(url.origin)) {
+    const error = new Error('BROWSER_TARGET_OUT_OF_SCOPE');
+    error.code = 'BROWSER_TARGET_OUT_OF_SCOPE';
+    throw error;
+  }
+  return url;
+}
+
 class PlaywrightRunner {
   constructor(eventBus, options = {}) {
     this.bus = eventBus;
+    if (options.cdpEndpoint) {
+      const error = new Error('CDP_SESSION_INHERITANCE_DENIED');
+      error.code = 'CDP_SESSION_INHERITANCE_DENIED';
+      throw error;
+    }
+    const targetUrl = validateTargetScope(options.target, options.allowedOrigins);
     this.options = {
-      target: options.target || 'https://ripio.com',
-      headless: options.headless || false,
-      devtools: options.devtools !== false,
-      cdpEndpoint: options.cdpEndpoint || null,
+      target: targetUrl.href,
+      allowedOrigins: [...new Set(options.allowedOrigins.map((origin) => new URL(origin).origin))],
+      headless: options.headless !== false,
+      devtools: false,
       cookiePollInterval: options.cookiePollInterval || 3000,
       perfPollInterval: options.perfPollInterval || 5000,
       recordHar: options.recordHar || false,
@@ -81,11 +123,7 @@ class PlaywrightRunner {
   async start() {
     console.log(`[Runner] Starting Playwright — target: ${this.options.target}`);
 
-    if (this.options.cdpEndpoint) {
-      await this._connectCDP();
-    } else {
-      await this._launchBrowser();
-    }
+    await this._launchBrowser();
 
     // Create CDP session for deeper network access
     if (!this.cdpSession) {
@@ -143,17 +181,6 @@ class PlaywrightRunner {
     this.page = await this.context.newPage();
 
     console.log('[Runner] Browser launched in headed mode');
-  }
-
-  /**
-   * Connect to existing browser via CDP
-   */
-  async _connectCDP() {
-    this.browser = await chromium.connectOverCDP(this.options.cdpEndpoint);
-    this.context = this.browser.contexts()[0] || await this.browser.newContext();
-    this.page = this.context.pages()[0] || await this.context.newPage();
-
-    console.log(`[Runner] Connected via CDP to ${this.options.cdpEndpoint}`);
   }
 
   /**
@@ -643,5 +670,5 @@ class PlaywrightRunner {
   }
 }
 
-module.exports = { PlaywrightRunner, AUTH_PATTERNS, AUTH_COOKIES, AUTH_HEADERS };
+module.exports = { PlaywrightRunner, validateTargetScope, AUTH_PATTERNS, AUTH_COOKIES, AUTH_HEADERS };
 

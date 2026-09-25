@@ -1,138 +1,99 @@
-#!/usr/bin/env node
 'use strict';
 
 const http = require('node:http');
-const {
-  ROUTE_CATALOG,
-  actorFromAuthorization,
-  privatePayload,
-  publicPayload,
-} = require('./fixtures');
+const { URL } = require('node:url');
+const vulnerablePolicy = require('./vulnerable-routes');
+const fixedPolicy = require('./fixed-routes');
+const { ROUTES, INVOICES, actorByToken } = require('./fixtures');
 
-function parseArgs(argv) {
-  const args = { mode: 'vulnerable', host: '127.0.0.1', port: 0 };
-  for (let i = 2; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === '--mode') args.mode = argv[++i];
-    else if (arg === '--host') args.host = argv[++i];
-    else if (arg === '--port') args.port = Number(argv[++i]);
-    else throw new Error(`Unknown argument: ${arg}`);
-  }
-  if (!['vulnerable', 'fixed'].includes(args.mode)) {
-    throw new Error(`Unsupported lab mode: ${args.mode}`);
-  }
-  if (!Number.isInteger(args.port) || args.port < 0 || args.port > 65535) {
-    throw new Error(`Invalid port: ${args.port}`);
-  }
-  return args;
-}
-
-function compileMatcher(template) {
-  const escaped = template
-    .split('/')
-    .map((segment) => (segment.startsWith(':') ? '([^/]+)' : segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
-    .join('/');
-  return new RegExp(`^${escaped}$`);
-}
-
-const MATCHERS = ROUTE_CATALOG.map((route) => ({ ...route, matcher: compileMatcher(route.template) }));
-
-function sendJson(res, status, payload) {
-  const body = `${JSON.stringify(payload)}\n`;
-  res.writeHead(status, {
+function json(response, status, body) {
+  const payload = `${JSON.stringify(body)}\n`;
+  response.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
-    'content-length': Buffer.byteLength(body),
+    'content-length': Buffer.byteLength(payload),
     'cache-control': 'no-store',
   });
-  res.end(body);
+  response.end(payload);
 }
 
-function createBoundaryLab({ mode, env = process.env }) {
-  if (!env.BOUNDARY_OWNER_TOKEN || !env.BOUNDARY_OUTSIDER_TOKEN) {
-    throw new Error('BOUNDARY_OWNER_TOKEN and BOUNDARY_OUTSIDER_TOKEN are required');
-  }
-  if (env.BOUNDARY_OWNER_TOKEN === env.BOUNDARY_OUTSIDER_TOKEN) {
-    throw new Error('Owner and outsider tokens must differ');
-  }
-
-  const policy = mode === 'vulnerable'
-    ? require('./vulnerable-routes')
-    : require('./fixed-routes');
-
-  return http.createServer((req, res) => {
-    const url = new URL(req.url, 'http://127.0.0.1');
-    if (req.method === 'GET' && url.pathname === '/health') {
-      sendJson(res, 200, { status: 'ok', lab: 'boundary-proof', mode });
-      return;
-    }
-    if (req.method === 'GET' && url.pathname === '/__boundary/routes') {
-      sendJson(res, 200, {
-        schema: 'boqa.boundary.route-catalog.v1',
-        routes: ROUTE_CATALOG,
-      });
-      return;
-    }
-    if (req.method !== 'GET') {
-      sendJson(res, 405, { kind: 'method_not_allowed' });
-      return;
-    }
-
-    const matched = MATCHERS.find((route) => route.matcher.test(url.pathname));
-    if (!matched) {
-      sendJson(res, 404, { kind: 'not_found' });
-      return;
-    }
-
-    const match = url.pathname.match(matched.matcher);
-    const projectId = decodeURIComponent(match[1]);
-    const actor = actorFromAuthorization(req.headers.authorization, env);
-    const decision = policy.decideAccess(matched, actor);
-    if (!decision.allowed) {
-      sendJson(res, actor ? 403 : 401, {
-        kind: 'access_denied',
-        reason: decision.reason,
-        project_id: projectId,
-      });
-      return;
-    }
-
-    const payload = matched.visibility === 'private'
-      ? privatePayload(matched, projectId)
-      : publicPayload(matched, projectId);
-    sendJson(res, 200, payload);
-  });
+function bearer(request) {
+  const header = request.headers.authorization || '';
+  return header.startsWith('Bearer ') ? header.slice(7) : '';
 }
 
-async function startBoundaryLab(options) {
-  const server = createBoundaryLab(options);
-  await new Promise((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(options.port, options.host, resolve);
-  });
-  const address = server.address();
+function matchRoute(url) {
+  const pathname = url.pathname;
+  let match = pathname.match(/^\/api\/v2\/invoices\/([^/]+)$/);
+  if (match) return { route_id: 'v2', invoice_id: decodeURIComponent(match[1]) };
+  match = pathname.match(/^\/api\/invoices\/([^/]+)\/export$/);
+  if (match) return { route_id: 'export', invoice_id: decodeURIComponent(match[1]) };
+  match = pathname.match(/^\/api\/accounts\/([^/]+)\/invoices\/([^/]+)$/);
+  if (match) return { route_id: 'nested', account_id: decodeURIComponent(match[1]), invoice_id: decodeURIComponent(match[2]) };
+  match = pathname.match(/^\/api\/invoices\/([^/]+)$/);
+  if (match) return { route_id: 'original', invoice_id: decodeURIComponent(match[1]) };
+  if (pathname === '/api/invoices' && url.searchParams.has('id')) {
+    return { route_id: 'query', invoice_id: url.searchParams.get('id') };
+  }
+  return null;
+}
+
+function routeCatalog() {
   return {
-    server,
-    host: options.host,
-    port: address.port,
-    baseUrl: `http://${options.host}:${address.port}`,
-    mode: options.mode,
+    schema: 'boqa.boundary.route-catalog.v2',
+    routes: ROUTES.map((route) => ({
+      ...route,
+      resource_type: 'invoice',
+      authority_boundary: 'tenant_account_invoice',
+      visibility: 'private',
+    })),
   };
 }
 
-async function main() {
-  const options = parseArgs(process.argv);
-  const running = await startBoundaryLab(options);
-  process.stdout.write(`${JSON.stringify({ event: 'BOUNDARY_LAB_READY', mode: running.mode, host: running.host, port: running.port })}\n`);
-  const close = () => running.server.close(() => process.exit(0));
-  process.on('SIGTERM', close);
-  process.on('SIGINT', close);
+function createBoundaryHandler({ mode, env }) {
+  if (!['vulnerable', 'fixed'].includes(mode)) throw new Error('mode must be vulnerable or fixed');
+  if (!env.BOQA_ACTOR_A_TOKEN || !env.BOQA_ACTOR_B_TOKEN) throw new Error('Both synthetic actor tokens are required');
+  const policy = mode === 'vulnerable' ? vulnerablePolicy : fixedPolicy;
+
+  return function handler(request, response) {
+    const url = new URL(request.url, 'http://127.0.0.1');
+    if (request.method === 'GET' && url.pathname === '/health') return json(response, 200, { status: 'ok', mode });
+    if (request.method === 'GET' && url.pathname === '/__boundary/routes') return json(response, 200, routeCatalog());
+    if (request.method !== 'GET') return json(response, 405, { error: 'method_not_allowed' });
+
+    const matched = matchRoute(url);
+    if (!matched) return json(response, 404, { error: 'not_found' });
+    const actor = actorByToken(bearer(request), env);
+    if (!actor) return json(response, 401, { error: 'unauthorized' });
+    const invoice = INVOICES[matched.invoice_id];
+    if (!invoice) return json(response, 404, { error: 'not_found' });
+    if (matched.route_id === 'nested' && matched.account_id !== invoice.account_id) return json(response, 404, { error: 'not_found' });
+
+    const ownsInvoice = actor.tenant_id === invoice.tenant_id
+      && actor.account_id === invoice.account_id
+      && actor.user_id === invoice.user_id;
+    if (ownsInvoice || policy[matched.route_id] === true) return json(response, 200, invoice);
+    return json(response, 403, { error: 'forbidden' });
+  };
 }
 
-if (require.main === module) {
-  main().catch((error) => {
-    process.stderr.write(`${error.stack || error.message}\n`);
-    process.exit(1);
+function startBoundaryLab({ mode, host = '127.0.0.1', port = 0, env = process.env }) {
+  return new Promise((resolve, reject) => {
+    const server = http.createServer(createBoundaryHandler({ mode, env }));
+    server.once('error', reject);
+    server.listen(port, host, () => {
+      const address = server.address();
+      resolve({ server, host, port: address.port, baseUrl: `http://${host}:${address.port}`, mode });
+    });
   });
 }
 
-module.exports = { createBoundaryLab, startBoundaryLab, parseArgs };
+async function cli() {
+  const args = process.argv.slice(2);
+  const mode = args[args.indexOf('--mode') + 1] || 'vulnerable';
+  const port = Number(args[args.indexOf('--port') + 1] || process.env.BOUNDARY_PORT || 0);
+  const running = await startBoundaryLab({ mode, port });
+  process.stdout.write(`${JSON.stringify({ mode, base_url: running.baseUrl })}\n`);
+}
+
+if (require.main === module) cli().catch((error) => { console.error(error.stack || error); process.exit(1); });
+module.exports = { createBoundaryHandler, startBoundaryLab, matchRoute, routeCatalog };

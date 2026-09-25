@@ -1,130 +1,138 @@
-# BOQA — Handoff operativo vivo
+# BOQA — Handoff lean kernel restaurado
 
-LAST_VERIFIED_AT=2026-07-21T01:01:27-03:00  
-TIMEZONE=America/Argentina/Cordoba
+DATE=2026-09-24
+ORDER_ID=BOQA-RESTORE-001-RECONCILE-PRUNE-LEAN-KERNEL-V1
+REPOSITORY=https://github.com/simondalmasso/boqa
+BASE_PR40_HEAD=34626bb2ee3f770babaf9ec2a7997f04872733cc
+REMOTE_MAIN_AT_ORDER=f33015c55fe84508377528c2ff718f9c5b28efe7
+BRANCH=restore/lean-kernel-v1
+FINAL_HEAD=REPORTADO_EN_ARQ_BOQA_RESTORE001_LEAN_KERNEL_HANDOFF
+NO_MERGE=true
+NO_DEPLOY=true
+PRODUCTION_TRAFFIC_CHANGE=false
 
-## Estado verificado
+## Canon reconciliado
 
-- `REPOSITORY=simonkey888/boqa`
-- `LAST_MATERIAL_MAIN_SHA=620ce2bfae2cbd23b2fa2e220fd3fd1ee930177c`
-- `MAIN_HEAD_POLICY=VERIFY_REMOTE_ON_READ`
-- `LAST_MERGED_PR=PR #26`
-- `MERGE_METHOD=SQUASH`
-- `MERGED_PR_HEAD=969ebdd3cc87e56d8407694c18dbd5a3df870e3d`
-- `PRODUCTION_SHA=INDETERMINADO`
-- `PRODUCTION_CHANGED=false`
-- `DEPLOY_PERFORMED=false`
-- `ROLLBACK_EXECUTED=false`
+- V4 patch SHA-256: `e144a17df03c1caf408920cd8a959e5c1f878624c116d0ed61556eebd227c1ef`.
+- V4 evidence SHA-256: `1c9339b5d6d0903dd033cddfce1455c7f3cef95a210c67e795fd0f75da21afe1`.
+- V4 bundle SHA-256: `f1ca789637b52035b30f5a7a2ee007dd3e1f9941bc555e50dc1f6351b0764371`.
+- V4 proof: `20_PASS_0_FAIL`; vulnerable regression exit `1`; fixed exit `0`; rejected destination fetches `0`.
+- BOQA006 source bundle SHA-256: `d133ec0058542da4b14d23d287eabd5135cb51c483e7060ae3b2c2cd8bc4624c`.
+- BOQA006 proof: `4_PASS_0_FAIL`; A=`REPRODUCED` + regression; B=`NOT_REPRODUCED` + no regression; C=`AMBIGUOUS` + no regression.
+- Exact BOQA006 source is reconciled under `kernel/verified-regression/`.
 
-`LAST_MATERIAL_MAIN_SHA` identifica el último commit de `main` que cambió código o workflows. Un commit exclusivamente documental puede avanzar el HEAD remoto sin alterar el estado material. Por eso el HEAD actual de `main` debe verificarse siempre en GitHub antes de actuar.
+## Supported product contract
 
-PR #26 fue integrado con protección sobre el HEAD exacto autorizado. El merge incorporó únicamente el mecanismo Cloudflare exact-preview y su clasificación fail-closed. No se promovió ninguna versión, no se modificó tráfico y no se desplegó backend.
+`STRICT_FINDING/EVIDENCE -> GROUNDED_CANDIDATE -> INDEPENDENT_REPRODUCTION -> SEMANTIC_ORACLE -> REPRODUCED | NOT_REPRODUCED | AMBIGUOUS -> STANDALONE_REGRESSION only when REPRODUCED -> HASH_BOUND_EVIDENCE`.
 
-## Producto integrado en main
+NOT_REPRODUCED and AMBIGUOUS remain fail-closed and produce no regression.
 
-- Frontera privada oculta en el Worker público.
-- API pública limitada a `GET /api/health` y `GET /api/hunter/status`.
-- Dashboard validado en desktop 1440, mobile 390 y mobile 360.
-- Workflow Cloudflare Preview V6 integrado con trigger exclusivo de `pull_request` hacia `main`.
-- La preview crea una versión exacta sin tráfico y clasifica el candidato como `PROMOTION_READY` o `BLOCKED_BACKEND_CONTRACT`.
-- Una clasificación exitosa con `promotion_ready=false` no autoriza deploy.
+## Lean supported architecture
 
-## PR #26 — resultado final
+The supported kernel is now explicit instead of instantiating every historic generation:
 
-- `PR=26`
-- `STATUS=MERGED`
-- `FINAL_HEAD=969ebdd3cc87e56d8407694c18dbd5a3df870e3d`
-- `MERGE_SHA=620ce2bfae2cbd23b2fa2e220fd3fd1ee930177c`
-- `MERGED_AT=2026-07-21T03:44:27Z`
+- OPERATION/STATE: `server.js`, `bus.js`, `lib/hunter-runtime.js`.
+- SCOPE_GUARD: `config/authorized-assets.json`, `lib/defensive-validation.js`, `lib/middleware.js`, V4 `destination-boundary.js`.
+- CANDIDATE / REPRODUCTION / SEMANTIC_ORACLE / REGRESSION_COMPILER: `spike/boundary-proof/**` plus `kernel/verified-regression/**`.
+- EVIDENCE_LEDGER: V4/006 hash manifests plus replay security/redaction primitives.
+- BROWSER_EXECUTOR: `agent/playwright-runner.js` + `agent/instrumentation.js`; requires an explicit target and explicit allowed origins, rejects inherited CDP sessions, and has no default external target.
+- REPLAY: `deterministic-replay-engine.js`, `replay-manifest-builder.js`, `replay-security-guard.js`, `replay-verification-engine.js`, `universal-session-recorder.js`.
+- ADAPTER_BOUNDARY: `worker.js` exposes only the public edge contract; `routes/hunter-v1.js` is the only retained Node API route module.
 
-### Gates finales sobre el HEAD exacto
+## Supported runtime entrypoints
 
-- Browser Smoke run `29798821600`: SUCCESS.
-- Browser artifact `8482995057`; digest `sha256:eecb50a990274fb36e8db0469d31fea09e608f53b7def0d3f37e1d2265ee9bfa`.
-- Real Docker Qualification run `29798821604`: SUCCESS.
-- Docker artifact `8483005997`; digest `sha256:70dd4fbde05a7ef463e32c46f9c209d48e8a5878181fccdac4ecdc076e64a99e`.
-- Cloudflare Preview V6 run `29798821613`: SUCCESS.
-- Preview artifact `8483018787`; digest `sha256:9d54a830e1c1f6799e35af2cdb8af643fa857240284fbe23295cd71120f56d41`.
-- Preview artifact checksums: `16/16` válidos.
+- `node server.js` — local backend/dashboard; browser execution is disabled until separately invoked with explicit scope.
+- Cloudflare source entrypoint: `worker.js`; no deploy is authorized by this handoff.
+- `node scripts/local-lab.js validate-config|run-once|status` — controlled local lab only.
+- `node spike/boundary-proof/compile-boundary.js ...` — V4 compiler with loopback-only destination guard.
+- `python kernel/verified-regression/run_three_cases.py` — BOQA006 controlled three-case evidence slice.
+- `PlaywrightRunner` is a library adapter requiring `target` + `allowedOrigins`; CDP session inheritance is denied.
+- Replay primitives are library entrypoints, not a network crawler or target-discovery system.
 
-### Preview exacta validada
+## Removed / superseded surface
 
-- `BUILD_UUID=263e1f0c-da71-4175-8a7d-e8b5fe57846c`
-- `VERSION_ID=4177d937-f2d0-4a5b-9e69-9bad46a95279`
-- `VERSION_NUMBER=71`
-- `PREVIEW_URL=https://4177d937-boqa.simondalmasso44.workers.dev`
-- `CLASSIFICATION=BLOCKED_BACKEND_CONTRACT`
-- `BLOCKER=BACKEND_HUNTER_CONTRACT_MISSING`
-- `PROMOTION_READY=false`
+`evidence/restore001/REACHABILITY_PREPRUNE.json` classifies the pre-prune JS graph. `evidence/restore001/PRUNED_JS_FILES.txt` contains the exact removed JS list.
 
-### Contratos y browser smoke
+The cleanup removes:
 
-- Worker `/health`: 200, `status=ok`, backend configurado.
-- Backend `/api/health`: 200, `status=ok`, versión `1.4.0`.
-- Backend `/api/hunter/status`: 404 HTML; contrato hunter ausente.
-- Dashboard: `DEGRADED` veraz; hunter `UNAVAILABLE`; health `FRESH` y `ok`.
-- Motivo visible observado: `Respuesta JSON inválida`.
-- Desktop 1440: PASS.
-- Mobile 390: PASS.
-- Mobile 360: PASS.
-- Page errors: 0.
-- Errores críticos inesperados de consola: 0.
-- Requests fallidos inesperados: 0.
-- Overflow horizontal: 0.
-- Rutas privadas y operativas ocultas: PASS.
-- Capturas inspeccionadas: PASS.
+- historical v0.x-v1.5 API route generations except `hunter-v1`;
+- the all-generations `lib/init.js` / pipelines / shutdown orchestration path;
+- historical discovery, forecast, economic, decision, autonomy, target/scheduler/worker-pool engine families not in the restored contract;
+- monolithic `agent.js` in favor of the explicit scoped Playwright adapter;
+- duplicate `agent/event-bus.js` in favor of `bus.js`;
+- old Pages catch-all API function in favor of the configured Worker edge boundary;
+- orphan recovery/scaffold scripts;
+- historical tests whose only purpose was the removed versioned architecture.
 
-### Producción preservada
+No module was deleted from `UNKNOWN`; post-prune graph has `UNKNOWN=0` and `UNREACHABLE=0`.
 
-Los snapshots productivos antes y después de la preview fueron idénticos:
+## External-target sanitation
 
-- `ACTIVE_DEPLOYMENT_ID=71016a2b-edc4-4786-8bf4-b56749507554`
-- `ACTIVE_VERSION_ID=136e5689-91d3-4431-8af0-d8b3248c6e3c`
-- `ACTIVE_TRAFFIC=100%`
+- Removed `npm run demo` and the hard-coded `https://ripio.com` shortcut.
+- Removed the historical CI runner/config whose default target was Ripio production.
+- Retained runtime URL literals are loopback/local only.
+- Browser adapter has no default target and requires explicit origin allowlist.
+- Browser adapter rejects inherited CDP/user-session reuse.
+- Defensive validation admits only explicitly configured authorized local/owned assets and currently contains a local fixture.
+- No discovered host/subdomain becomes authorized automatically.
+- No bounty, wallet, payment, Laya, market-adapter, or autonomous-hunting feature was added.
 
-Estos IDs fueron revalidados por la evidencia de Preview V6 previa al merge. El merge Git no realizó una operación Cloudflare ni backend. No existe un run productivo asociado al commit de merge dentro de los runs consultables por commit.
+## Measurements
 
-## Backend preflight
+Measurement base is exact PR40 + accepted V4 + accepted BOQA006 source, before pruning.
 
-- `PR=25`
-- `BRANCH=deploy/boqa-backend-preflight-v2`
-- `HEAD=3925e8784f68c3a0084be161804b39a934512c1c`
-- `STATUS=BLOCKED_BY_EXTERNAL_ACCESS`
-- El PR quedó basado en un `main` anterior y actualmente no es mergeable.
-- SSH: faltan host remoto y clave bajo los nombres aceptados.
-- OCI API: faltan identidad, firma, región, compartimento y resolución de instancia.
-- Browser y Docker del preflight: SUCCESS.
-- No hubo conexión remota, deploy, restart ni modificación productiva.
+- FILES_BEFORE=221
+- JS_FILES_BEFORE=184
+- RUNTIME_JS_BEFORE=151
+- RUNTIME_BYTES_BEFORE=2479403
+- ROOT_RUNTIME_MODULES_BEFORE=87
+- PACKAGE_SCRIPTS_BEFORE=35
+- DEPENDENCIES_BEFORE=6
+- ROOT_RUNTIME_MODULES_AFTER=8
+- PACKAGE_SCRIPTS_AFTER=13
+- DEPENDENCIES_AFTER=3
+- DEAD_OR_SUPERSEDED_DUPLICATE_JS_REMOVED=127
+- HISTORICAL_ROUTE_MODULES_REMOVED=10
+- EXTERNAL_DEFAULT_TARGETS=0
 
-## Arquitectura de entrega vigente
+Final file/JS/runtime-byte counts are recorded in `evidence/restore001/LEAN_KERNEL_SUMMARY.json` and the external ARQ terminal handoff.
 
-1. GitHub conserva código, PR, tests, Docker y browser smoke.
-2. Cloudflare Workers Builds crea una versión exacta sin tráfico.
-3. El gate clasifica compatibilidad y promotion readiness.
-4. Sólo una versión con `promotion_ready=true` puede promoverse.
-5. La promoción debe reutilizar la versión validada; no recompilar.
-6. Backend y Worker se validan y despliegan como componentes separados.
-7. Rollback conserva y verifica la versión productiva anterior.
+## Verification commands
 
-## Riesgos abiertos
+Primary gate:
 
-- Backend productivo inaccesible desde GitHub Actions por falta de ruta SSH u OCI API.
-- `/api/hunter/status` no existe en el backend productivo activo.
-- `BOQA_RELEASE_SHA` productivo continúa indeterminado.
-- PR #25 necesita reconstruirse o rebasarse sobre el HEAD remoto actual de `main` antes de cualquier integración.
-- La versión preview `4177d937-f2d0-4a5b-9e69-9bad46a95279` no es promocionable mientras falte el contrato backend.
+```text
+npm ci --ignore-scripts --offline
+npm test
+```
 
-## Reglas permanentes
+`npm test` runs the supported JS characterization suite, V4 20-test suite, and BOQA006 4-test suite.
 
-- No validar infraestructura de terceros.
-- No trabajar directamente sobre `main`.
-- No exponer información privada u operativa innecesaria.
-- No imprimir valores sensibles.
-- No inventar estado hunter desde health genérico.
-- No confundir gate exitoso con candidato promocionable.
-- No declarar producción actualizada sin versión, deployment, tráfico, health, browser smoke y rollback verificados.
-- Mantener sincronizados este archivo y el documento canónico de Drive.
+Additional focused gates:
 
-## Siguiente acción exacta
+```text
+node test/test-browser-scope-guard.js
+node test/test-replay-kernel.js
+node test/test-hunter-runtime-v1.js
+node test/test-public-private-boundary.js
+node scripts/local-lab.js validate-config
+```
 
-Verificar el HEAD remoto actual de `main` y reconstruir o rebasar PR #25 sobre esa base, conservando únicamente los preflights sanitizados SSH/OCI. Reejecutar sólo la ruta de acceso que tenga todas sus entradas configuradas; si ninguna está completa, mantener el PR en Draft y no desplegar.
+Browser smoke uses only loopback fixtures. Local browser execution may require Playwright system libraries; remote CI verification must use an exact-head, non-Cloudflare workflow path and is reported externally without changing this commit.
+
+## Governance finding
+
+At LOG57 issuance, `main` was unprotected. This is a governance finding only; this order does not modify repository settings.
+
+## Evidence
+
+- `evidence/restore001/CANON_RECONCILIATION.json`
+- `evidence/restore001/REACHABILITY_PREPRUNE.json`
+- `evidence/restore001/REACHABILITY_POSTPRUNE.json`
+- `evidence/restore001/PRUNED_JS_FILES.txt`
+- `evidence/restore001/LEAN_KERNEL_SUMMARY.json`
+- `evidence/restore001/TEST_RESULTS.txt`
+
+## Next safe seam
+
+Independent review should first accept this lean kernel and its exact-head CI. Only afterward may separate orders add browser-backed execution or other layers. Laya, bounty/payment features, UI redesign, deploy, merge, and production changes are explicitly outside this handoff.

@@ -1,157 +1,120 @@
-#!/usr/bin/env node
 'use strict';
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { loadKnownFinding, validateFinding } = require('./finding-loader');
+const { DEFAULT_INPUT_PATH, loadClosedBoundaryInput } = require('./finding-loader');
+const { validateLoopbackBaseUrl } = require('./destination-boundary');
 const { buildRouteGraph } = require('./route-graph');
-const { generateRelatedVariants, selectPublicControl } = require('./variant-generator');
-const { executeTwoActorPlan } = require('./two-actor-executor');
-const { evaluatePlan } = require('./boundary-oracle');
-const { buildContract, writeContract } = require('./exporters/contract');
+const { generateRelatedVariants } = require('./variant-generator');
+const { executeTwoActorMatrix } = require('./two-actor-executor');
+const { evaluateBoundary, calculateMetrics } = require('./boundary-oracle');
+const { ACTORS, materializePath, groundTruthFor } = require('./lab/fixtures');
+const { writeClosedContractCopy } = require('./exporters/contract');
 const { writeStandaloneTest } = require('./exporters/playwright-test');
 const { buildEvidence, writeEvidence } = require('./exporters/evidence');
 
-function parseArgs(argv) {
-  const args = { baseUrl: null, outDir: process.cwd(), labMode: 'unknown' };
-  for (let i = 2; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === '--base-url') args.baseUrl = argv[++i];
-    else if (arg === '--out-dir') args.outDir = argv[++i];
-    else if (arg === '--lab-mode') args.labMode = argv[++i];
-    else throw new Error(`Unknown argument: ${arg}`);
+function resolveInputBoundary(input, actors) {
+  const expectedOwner = actors[input.expected_owner];
+  const prohibitedActor = actors[input.prohibited_actor];
+  if (!expectedOwner || !prohibitedActor || expectedOwner.id === prohibitedActor.id) {
+    throw new Error('Input actor boundary is invalid');
   }
-  if (!args.baseUrl) throw new Error('--base-url is required');
-  if (!['vulnerable', 'fixed', 'unknown'].includes(args.labMode)) {
-    throw new Error('--lab-mode must be vulnerable, fixed, or unknown');
+  if (expectedOwner.invoice_id !== input.resource.id) throw new Error('Input resource does not belong to expected_owner fixture');
+  if (expectedOwner.marker !== input.private_marker) throw new Error('Input private marker does not match expected_owner fixture');
+  if (materializePath('/api/invoices/:id', expectedOwner) !== input.finding.path) {
+    throw new Error('Input finding path does not identify the expected_owner resource');
   }
-  const parsed = new URL(args.baseUrl);
-  if (!['127.0.0.1', 'localhost', '::1'].includes(parsed.hostname)) {
-    throw new Error('BOQA-005 compiler is restricted to loopback controlled labs');
-  }
-  return args;
+  return Object.freeze({ expected_owner: expectedOwner, prohibited_actor: prohibitedActor });
 }
 
-function seedCandidate(finding, originalRouteId) {
-  return {
-    id: `seed-${originalRouteId}`,
-    source: 'known_finding',
-    source_finding_id: finding.id,
-    route_id: originalRouteId,
-    method: finding.method,
-    route_template: finding.route_template,
-    concrete_path: finding.concrete_path,
-    authority_boundary: finding.authority_boundary,
-    resource_type: finding.resource_type,
-    operation: 'read',
-  };
-}
-
-function calculateMetrics({ mode, plan, oracleResults }) {
-  let tp = 0;
-  let fp = 0;
-  let fn = 0;
-  let tn = 0;
-  for (let i = 0; i < plan.length; i += 1) {
-    const candidate = plan[i];
-    const detected = oracleResults[i].contradiction;
-    const planted = mode === 'vulnerable' && candidate.authority_boundary !== 'public';
-    if (detected && planted) tp += 1;
-    else if (detected && !planted) fp += 1;
-    else if (!detected && planted) fn += 1;
-    else tn += 1;
-  }
-  return {
-    true_positives: tp,
-    false_positives: fp,
-    false_negatives: fn,
-    true_negatives: tn,
-    contradictions: oracleResults.filter((item) => item.contradiction).length,
-    protected_cases: plan.filter((item) => item.authority_boundary !== 'public').length,
-    public_controls: plan.filter((item) => item.authority_boundary === 'public').length,
-  };
-}
-
-async function compileBoundary({ baseUrl, outDir, labMode, ownerToken, outsiderToken, fetchImpl = fetch }) {
-  if (!ownerToken || !outsiderToken) throw new Error('Owner and outsider credentials are required');
-  if (ownerToken === outsiderToken) throw new Error('Owner and outsider credentials must differ');
+async function compileBoundary({
+  baseUrl,
+  outDir,
+  labMode,
+  contractPath = DEFAULT_INPUT_PATH,
+  actorAToken = process.env.BOQA_ACTOR_A_TOKEN,
+  actorBToken = process.env.BOQA_ACTOR_B_TOKEN,
+  fetchImpl = fetch,
+}) {
+  if (!baseUrl || !outDir) throw new Error('baseUrl and outDir are required');
+  const safeBaseUrl = validateLoopbackBaseUrl(baseUrl);
+  if (!['vulnerable', 'fixed'].includes(labMode)) throw new Error('labMode must be vulnerable or fixed');
+  if (!actorAToken || !actorBToken) throw new Error('BOQA_ACTOR_A_TOKEN and BOQA_ACTOR_B_TOKEN are required');
   fs.mkdirSync(outDir, { recursive: true });
 
-  const finding = validateFinding(loadKnownFinding());
-  const graph = await buildRouteGraph(baseUrl, fetchImpl);
-  const generated = generateRelatedVariants(finding, graph);
-  if (generated.variants.length < 1) throw new Error('No related authorization variants were inferred');
-  const publicControl = selectPublicControl(finding, graph);
-  const protectedCases = [
-    seedCandidate(finding, generated.original_route_id),
-    ...generated.variants.map((variant) => ({ ...variant, source: 'inferred_related_variant' })),
-  ];
-  const plan = [...protectedCases, publicControl];
-  const receipts = await executeTwoActorPlan({
-    baseUrl,
-    plan,
-    ownerToken,
-    outsiderToken,
+  const { input, raw } = loadClosedBoundaryInput(contractPath);
+  const inputBoundary = resolveInputBoundary(input, ACTORS);
+  const graph = await buildRouteGraph(safeBaseUrl, fetchImpl);
+  const discovery = generateRelatedVariants(input, graph, ACTORS);
+  const receipts = await executeTwoActorMatrix({
+    baseUrl: safeBaseUrl,
+    candidates: discovery.candidates,
+    actors: ACTORS,
+    actorAToken,
+    actorBToken,
     fetchImpl,
   });
-  const oracleResults = evaluatePlan(receipts, finding);
-  const metrics = calculateMetrics({ mode: labMode, plan, oracleResults });
+  const oracleResults = receipts.map((receiptSet) => ({
+    route_id: receiptSet.candidate.route_id,
+    source: receiptSet.candidate.source,
+    ...evaluateBoundary(receiptSet),
+  }));
+  const groundTruth = groundTruthFor(labMode);
+  const metrics = calculateMetrics(oracleResults, groundTruth);
 
-  const contract = buildContract({
-    finding,
-    graph,
-    variants: generated.variants,
-    protectedCases,
-    publicControl,
-  });
-  const contractFile = writeContract(outDir, contract);
-  const testFile = writeStandaloneTest(outDir, { finding, protectedCases, publicControl });
+  const contractOutput = writeClosedContractCopy(outDir, raw);
+  const testFile = writeStandaloneTest(outDir, { actors: ACTORS, candidates: discovery.candidates });
   const evidence = buildEvidence({
     mode: labMode,
-    finding,
+    input,
+    actors: ACTORS,
+    inputBoundary,
+    groundTruth,
     graph,
-    variants: generated.variants,
+    discovery,
     receipts,
     oracleResults,
     metrics,
-    contractFile,
+    contractFile: contractOutput.file,
     testFile,
   });
   const evidenceFile = writeEvidence(outDir, evidence);
 
   return {
-    finding,
+    input,
+    actors: ACTORS,
+    inputBoundary,
+    groundTruth,
     graph,
-    variants: generated.variants,
-    protectedCases,
-    publicControl,
+    discovery,
     receipts,
     oracleResults,
     metrics,
-    files: { contractFile, testFile, evidenceFile },
+    evidence,
+    files: { contractFile: contractOutput.file, testFile, evidenceFile },
   };
 }
 
-async function main() {
-  const args = parseArgs(process.argv);
+function readArg(name, fallback) {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] : fallback;
+}
+
+async function cli() {
   const result = await compileBoundary({
-    ...args,
-    ownerToken: process.env.BOUNDARY_OWNER_TOKEN,
-    outsiderToken: process.env.BOUNDARY_OUTSIDER_TOKEN,
+    baseUrl: readArg('--base-url'),
+    outDir: path.resolve(readArg('--out-dir', path.join(__dirname, 'output'))),
+    labMode: readArg('--lab-mode', 'vulnerable'),
+    contractPath: path.resolve(readArg('--contract', DEFAULT_INPUT_PATH)),
   });
   process.stdout.write(`${JSON.stringify({
-    event: 'BOUNDARY_COMPILE_COMPLETE',
-    variants: result.variants.length,
+    source_route_id: result.discovery.source_route_id,
+    input_variant_count: result.discovery.input_variant_count,
+    derived_variants: result.discovery.variants.map((candidate) => candidate.route_id),
     metrics: result.metrics,
-    outputs: Object.values(result.files).map((file) => path.basename(file)).sort(),
+    verdicts: result.oracleResults.map(({ route_id, verdict }) => ({ route_id, verdict })),
   })}\n`);
 }
 
-if (require.main === module) {
-  main().catch((error) => {
-    process.stderr.write(`${error.stack || error.message}\n`);
-    process.exit(1);
-  });
-}
-
-module.exports = { compileBoundary, parseArgs, seedCandidate, calculateMetrics };
+if (require.main === module) cli().catch((error) => { console.error(error.stack || error); process.exit(1); });
+module.exports = { resolveInputBoundary, compileBoundary };
