@@ -1,0 +1,73 @@
+name: Mirror GitHub to GitLab
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitlab-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout canonical GitHub repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure GitLab SSH access
+        shell: bash
+        env:
+          GITLAB_MIRROR_SSH_KEY: ${{ secrets.GITLAB_MIRROR_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$GITLAB_MIRROR_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts
+          git remote remove gitlab 2>/dev/null || true
+          git remote add gitlab git@gitlab.com:simondalmasso/boqa.git
+
+      - name: Fetch all GitHub branches and tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --force origin '+refs/heads/*:refs/remotes/origin/*' --tags
+
+      - name: Mirror GitHub branches downstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r branch; do
+            [ "$branch" = "HEAD" ] && continue
+            git push gitlab "refs/remotes/origin/$branch:refs/heads/$branch"
+          done < <(git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin)
+
+      - name: Mirror GitHub tags downstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r tagref; do
+            git push gitlab "$tagref:$tagref"
+          done < <(git for-each-ref --format='%(refname)' refs/tags)
+
+      - name: Verify canonical main parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          GITHUB_MAIN_SHA="$(git rev-parse refs/remotes/origin/main)"
+          GITLAB_MAIN_SHA="$(git ls-remote gitlab refs/heads/main | awk '{print $1}')"
+          echo "GITHUB_MAIN_SHA=$GITHUB_MAIN_SHA"
+          echo "GITLAB_MAIN_SHA=$GITLAB_MAIN_SHA"
+          if [ "$GITHUB_MAIN_SHA" != "$GITLAB_MAIN_SHA" ]; then
+            echo "HEAD_PARITY=FAIL"
+            exit 1
+          fi
+          echo "HEAD_PARITY=PASS"
