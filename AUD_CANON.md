@@ -8,8 +8,8 @@ LIVE=https://boqa.simondalmasso44.workers.dev/
 LAST_VERIFIED=2026-09-25T22:05-03:00  
 IMPLEMENTATION_CANON_BRANCH=feat/boqa-cuore-radar-v1  
 IMPLEMENTATION_CANON_HEAD=0f756f682df915b8b97c84e38bcb8288b53d2009  
-MAIN=f33015c55fe84508377528c2ff718f9c5b28efe7  
-MAIN_IS_CURRENT_IMPLEMENTATION=false
+MAIN_RUNTIME_BASE_BEFORE_CANON_DOCS=f33015c55fe84508377528c2ff718f9c5b28efe7  
+MAIN_RUNTIME_IS_CURRENT_IMPLEMENTATION=false
 
 ## CANONICAL LINKS
 - Control log: https://github.com/simondalmasso/boqa/issues/37
@@ -58,7 +58,7 @@ ONE_ARQ only: execute LOG67 / LAYA_SHADOW_DECISION_BENCHMARK_V1 from CORE001 hea
 - UI render/accessibility runtime evidence remains incomplete.
 - Main is stale relative to accepted implementation branches.
 - Live site is historical; no current accepted branch deployment is canon.
-- External Grok transcript supplied by owner is only a preliminary cross-check; it did not contain the required final handoff/branch/ZIP in the supplied material. fileciteturn471file7
+- External Grok transcript supplied by owner is only a preliminary cross-check; it did not contain the required final handoff/branch/ZIP in the supplied material.
 
 ## DO_NOT_TOUCH
 - Do not rebuild cleanup or CORE001.
